@@ -17,7 +17,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   List<ApMeMessage> messages = [];
   List<Friend> users = [];
-  Color clrGetweb=Colors.brown;
+  Color clrGetweb = Colors.brown;
   @override
   Widget build(BuildContext context) {
     AppParameters.currentUser = "akbar";
@@ -31,11 +31,10 @@ class _MainPageState extends State<MainPage> {
             height: 20,
           ),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(width: 20),
-             // btnAddMessage("Add User"),
+              // btnAddMessage("Add User"),
               //btnAddUser("Add User"),
               btnSendMessageUpdates("Send"),
 
@@ -65,18 +64,20 @@ class _MainPageState extends State<MainPage> {
       onPressed: addMessage,
     );
   }
-Widget btnAddUser(String text) {
+
+  Widget btnAddUser(String text) {
     return RaisedButton(
       color: Colors.red,
       child: Text(text),
       onPressed: addUser,
     );
   }
-Widget btnSendMessageUpdates(String text) {
+
+  Widget btnSendMessageUpdates(String text) {
     return RaisedButton(
       color: Colors.red,
       child: Text(text),
-      onPressed: (){
+      onPressed: () {
         ApMeMessages.syncMessages();
       },
     );
@@ -103,8 +104,8 @@ Widget btnSendMessageUpdates(String text) {
       color: Colors.blue,
       child: Text(text),
       onPressed: () {
-       ApMeMessages.clearAllLocalMessages();
-       TempMessages.clearAllTempMessages();
+        ApMeMessages.clearAllLocalMessages();
+        TempMessages.clearAllTempMessages();
         setupList();
       },
     );
@@ -130,12 +131,9 @@ Widget btnSendMessageUpdates(String text) {
 
   void getMessagesFromServer() async {
     clrGetweb = Colors.grey;
-    setState(() {
-      
-    });
+    setState(() {});
     messages = await ApMeMessages.getWebNewMessages(true);
-    clrGetweb = 
-    Colors.brown;
+    clrGetweb = Colors.brown;
     setState(() {});
   }
 
@@ -150,12 +148,13 @@ Widget btnSendMessageUpdates(String text) {
     await message.insert();
     setupList();
   }
-void addUser() async {
-    var user = new Friend(        
-        friendId: "akbar",
-        firstName: "mahnaz",
-        lastName: "پورخجسته",
-        );
+
+  void addUser() async {
+    var user = new Friend(
+      friendId: "akbar",
+      firstName: "mahnaz",
+      lastName: "پورخجسته",
+    );
     await user.insert();
     setupList();
   }
@@ -244,7 +243,7 @@ void addUser() async {
             ],
           );
         },
-      ),      
+      ),
     );
   }
 
@@ -274,7 +273,8 @@ void addUser() async {
                             " " +
                             messagesList[index].messageType.toString() +
                             " " +
-                            (messagesList[index].deliveredAt~/100000).toString(),
+                            (messagesList[index].deliveredAt ~/ 100000)
+                                .toString(),
                         style: myStyle()),
                   ],
                 ),
@@ -327,9 +327,7 @@ void addUser() async {
             ],
           );
         },
-      ),      
+      ),
     );
   }
-
-
 }
