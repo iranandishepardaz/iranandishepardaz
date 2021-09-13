@@ -6,3 +6,7 @@ adb connect 192.168.1.5 Samsung J5
 adb connect 192.168.1.2 Xperia-X
 
  Unplug device start to debug.
+
+ To go back to usb mode
+ adb disconnect 192.168.1.5
+ adb usb
