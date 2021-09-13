@@ -93,12 +93,14 @@ class ApMeMessages {
     List<ApMeMessage> allMessages = [];
     int recordsCount = await localMessagesCount();
     List<List<String>> records = await ApMeUtils.fetchData([
-      recordsCount == 0 ? "104" : "102", //When application is reinstalled or is new
+      recordsCount == 0
+          ? "104"
+          : "102", //When application is reinstalled or is new
       AppParameters.currentUser,
       AppParameters.currentPassword,
-    ]);    
-    if (records.length > 1){
-      AppParameters.newMessagesCount += records.length - 1 ;
+    ]);
+    if (records.length > 1) {
+      AppParameters.newMessagesCount += records.length - 1;
       for (int i = 1; i < records.length; i++) {
         ApMeMessage tmpMessage = ApMeMessage.fromWebRecord(records[i]);
         tmpMessage.setDelivery(false); //will insert at next lines

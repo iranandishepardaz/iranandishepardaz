@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ap_me/Friends.dart';
+import 'package:ap_me/ShortMessages.dart';
 import 'package:ap_me/TempMessages.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -60,6 +61,8 @@ var status;
     print("Messages Table Created");
     db.execute(TempMessages.tableCreator());
     print("TempMessages Table Created");
+    db.execute(ShortMessages.tableCreator());
+    print("ShortMessages Table Created");
   }
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {

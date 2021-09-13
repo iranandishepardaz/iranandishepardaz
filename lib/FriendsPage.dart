@@ -24,7 +24,7 @@ class _FriendsPageState extends State<FriendsPage> {
   List<FriendModel> friendModels = [];
   List<Friend> _friends;
   bool isLoading = false;
-   int _newMessagesCount = 0;
+  int _newMessagesCount = 0;
 
   @override
   void initState() {
@@ -164,8 +164,10 @@ class _FriendsPageState extends State<FriendsPage> {
     }
     friendModels = [];
     await generateModels();
-    if (AppParameters.newMessagesCount > 0) _showNotification();
-    else  _newMessagesCount = 0;
+    if (AppParameters.newMessagesCount > 0)
+      _showNotification();
+    else
+      _newMessagesCount = 0;
     setState(() {
       isLoading = false;
       print(DateTime.now().toString() + " Chatlist Local refresh done.");
@@ -234,6 +236,7 @@ class _FriendsPageState extends State<FriendsPage> {
   void openMainPage() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => MainPage()));
+    // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }
 
   void openNotPage() {
@@ -321,6 +324,7 @@ class _FriendsPageState extends State<FriendsPage> {
 
         if (exit) {
           AppParameters.newMessagesCount = 0;
+          _newMessagesCount = 0;
         } else {
           // user pressed No button
         }
@@ -328,7 +332,6 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
- 
   Future _showNotification() async {
     var AndSpec = new AndroidNotificationDetails(
         'ApMe', 'Flutter Messenger', 'Ap Messenger',
@@ -339,13 +342,13 @@ class _FriendsPageState extends State<FriendsPage> {
     var platformChannelSpecifics = new NotificationDetails(AndSpec, IOSSpec);
     //notified = true;
     if (_newMessagesCount != AppParameters.newMessagesCount) {
-      await flutterLocalNotificationsPlugin.show(
+      /*    await flutterLocalNotificationsPlugin.show(
         0,
         'ApMe',
         'شما' + AppParameters.newMessagesCount.toString() + ' پیام تازه دارید',
         platformChannelSpecifics,
         payload: 'No_Sound',
-      );
+      );*/
     }
     _newMessagesCount = AppParameters.newMessagesCount;
   }

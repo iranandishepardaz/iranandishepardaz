@@ -1,6 +1,8 @@
-import 'package:ap_me/LoginPage.dart';
-import 'package:ap_me/MainPage.dart';
+//import 'package:ap_me/LoginPage.dart';
+//import 'package:ap_me/MainPage.dart';
 import 'package:flutter/material.dart';
+
+import 'LoginPage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +16,7 @@ class ApMesApplication extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: new ThemeData(primarySwatch: Colors.lightGreen
-        ),
+        theme: new ThemeData(primarySwatch: Colors.lightGreen),
         home: LoginPage());
   }
 }
