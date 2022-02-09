@@ -1,5 +1,7 @@
+import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/ShortMessages.dart';
 import 'package:flutter/material.dart';
+
 //import 'package:sms/sms.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 
@@ -10,10 +12,14 @@ class ShortMessagesPage extends StatefulWidget {
 
 class _ShortMessagesPageState extends State<ShortMessagesPage> {
   SmsQuery query = new SmsQuery();
-  List<SmsMessage> allmessages;
+  List<SmsMessage> allMessages;
   List<ShortMessage> localMessages;
+  int messageToShowCount = 20;
+  bool reverseList = true;
+
   @override
   void initState() {
+    messageToShowCount = AppParameters.smsGetCount;
     super.initState();
   }
 
@@ -25,54 +31,68 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
           backgroundColor: Colors.redAccent,
           actions: <Widget>[
             IconButton(
+              icon: Icon(Icons.sms_sharp),
               color: Colors.white,
               onPressed: () {
-                getLocalShortMessages();
+                reverseList = false;
+                getShortMessages(messageToShowCount);
                 //openNotPage();
               },
-              icon: Icon(Icons.drafts_sharp),
             ),
             IconButton(
+              icon: Icon(Icons.drafts_sharp),
               color: Colors.white,
               onPressed: () {
+                messageToShowCount = 20;
+                reverseList = false;
+                getLocalShortMessages(messageToShowCount);
+                //openNotPage();
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.save),
+              color: Colors.white,
+              onPressed: () {
+                getAndSaveShortMessages(messageToShowCount);
+                //openNotPage();
+              },
+            ),
+            /*IconButton(
+              color: Colors.white,
+              onPressed: () {
+                reverseList = true;
                 uploadShortMessages();
                 //openNotPage();
               },
-              icon: Icon(Icons.upload_file),
+              icon: Icon(Icons.upload),
             ),
+            */
             IconButton(
+              icon: Icon(Icons.download),
               color: Colors.white,
               onPressed: () {
-                getAllMessages();
+                downloadShortMessages();
                 //openNotPage();
               },
-              icon: Icon(Icons.sms_sharp),
             ),
             IconButton(
-              color: Colors.white,
-              onPressed: () {
-                getAndSaveMessages();
-                //openNotPage();
-              },
-              icon: Icon(Icons.save),
-            ),
-            IconButton(
+              icon: Icon(Icons.clear),
               color: Colors.white,
               onPressed: () {
                 clearShortMessages();
                 //openNotPage();
               },
-              icon: Icon(Icons.clear),
             ),
           ],
         ),
         body: SingleChildScrollView(
+          reverse: reverseList,
           child: Container(
             padding: EdgeInsets.all(20),
-            child: allmessages == null
+            child: allMessages == null
                 ? Center(child: CircularProgressIndicator())
                 : Column(
-                    children: allmessages.map((messageone) {
+                    children: allMessages.map((messageone) {
                     //populating children to column using map
                     String type =
                         "NONE"; //get the type of message i.e. inbox, sent, draft
@@ -105,13 +125,44 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
         ));
   }
 
-  Future getLocalShortMessages() async {
+  Future<void> getShortMessages(int count) async {
     setState(() {
       //update UI
-      allmessages = null;
+      allMessages = null;
     });
-    localMessages = await ShortMessages.getLocalMessages(100);
-    allmessages = [];
+    allMessages = await ShortMessages.getShortMessages(count);
+    setState(() {});
+  }
+
+  Future<void> getAndSaveShortMessages(int count) async {
+    setState(() {
+      //update UI
+      allMessages = null;
+    });
+    // Future.delayed(Duration.zero, () async {
+    List<SmsMessage> tmpMessages = await ShortMessages.getShortMessages(count);
+    for (int i = 0; i < tmpMessages.length; i++) {
+      ShortMessage tmpMessage = new ShortMessage(
+          address: tmpMessages[i].address,
+          sentAt: tmpMessages[i].date.millisecondsSinceEpoch ~/ 1000,
+          messageBody: tmpMessages[i].body,
+          kind: tmpMessages[i].kind == SmsMessageKind.Sent
+              ? 0
+              : (tmpMessages[i].kind == SmsMessageKind.Received ? 1 : 2),
+          uploaded: 0);
+      await tmpMessage.insert();
+    }
+    getLocalShortMessages(count);
+    // });
+  }
+
+  Future getLocalShortMessages(int count) async {
+    setState(() {
+      //update UI
+      allMessages = null;
+    });
+    localMessages = await ShortMessages.getLocalMessages(count);
+    allMessages = [];
     for (int i = localMessages.length - 1; i > -1; i--) {
       SmsMessage tmpMessage =
           SmsMessage(localMessages[i].address, localMessages[i].messageBody);
@@ -131,34 +182,29 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
           tmpMessage.kind = SmsMessageKind.Draft;
           break;
       }
-      allmessages.add(tmpMessage);
+      allMessages.add(tmpMessage);
     }
     setState(() {});
   }
 
   Future uploadShortMessages() async {
-    for (int i = 0; i < localMessages.length; i++)
-      await ShortMessages.uploadMessage(localMessages[i]);
+    for (int i = 0; i < localMessages.length; i++) {
+      if (localMessages[i].uploaded == 0) await localMessages[i].upload();
+    }
   }
 
-  void getAllMessages() {
+  void downloadShortMessages() async {
     setState(() {
-      //update UI
-      allmessages = null;
+      allMessages = null;
     });
+    //List<ShortMessage> allMessages = await ShortMessages.download(10);
+    allMessages = await ShortMessages.getWebShortMessages(AppParameters.smsUser,
+        AppParameters.smsGetCount, AppParameters.smsFilter, false);
+
     Future.delayed(Duration.zero, () async {
-      List<SmsMessage> messages = await query.querySms(
-        //querySms is from sms package
-        kinds: [SmsQueryKind.Inbox, SmsQueryKind.Sent, SmsQueryKind.Draft],
-        //filter Inbox, sent or draft messages
-        count: 20, //number of sms to read
-        // address: "09373792580",
-        //address: "+989308421948",
-        //address: "+989908699882",
-      );
       setState(() {
-        //update UI
-        allmessages = messages;
+        reverseList = false;
+        // allMessages = messages;
       });
     });
   }
@@ -166,22 +212,22 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
   void clearShortMessages() {
     setState(() {
       //update UI
-      allmessages = null;
+      allMessages = null;
     });
-    Future.delayed(Duration.zero, () async {
-      await ShortMessages.clearAllLocalMessages();
-    });
+    //  Future.delayed(Duration.zero, () async {
+    //   await ShortMessages.clearAllLocalMessages();
+    //  });
   }
 
-  void getAndSaveMessages() {
+  void getAndSaveMessages(int count) {
     setState(() {
       //update UI
-      allmessages = null;
+      allMessages = null;
     });
     Future.delayed(Duration.zero, () async {
       List<SmsMessage> messages = await query.querySms(
         kinds: [SmsQueryKind.Inbox, SmsQueryKind.Sent, SmsQueryKind.Draft],
-        count: 10, //number of sms to read
+        count: count, //number of sms to read
         //address: "09373792580",
         //address: "+989308421948",
         //address: "+989908699882",
@@ -197,7 +243,7 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
             uploaded: 0);
         await tmpMessage.insert();
       }
-      getLocalShortMessages();
+      getLocalShortMessages(messageToShowCount);
     });
   }
 }

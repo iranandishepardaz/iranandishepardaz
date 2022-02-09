@@ -4,36 +4,34 @@ import 'package:ap_me/AppParameters.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
 
-
 import 'package:meta/meta.dart';
 
 class Friends {
   static const String TableName = "Friends";
-  
+
   static String tableCreator() {
     String sql = "CREATE TABLE " + Friends.TableName + "(";
     sql += "friendId Text, ";
     sql += "firstName TEXT, ";
     sql += "lastName TEXT, ";
-    sql += "remark TEXT, ";
+    sql += "lastSeen INTEGER DEFAULT 0, ";
     sql += "PRIMARY KEY(friendId)";
     sql += ")";
     return sql;
   }
-  
+
   static Future<List<Friend>> getLocalFriendsList() async {
-    var client = await AppDatabase().db;
-    var res = await client.query(Friends.TableName,
-        orderBy: "friendId");
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB
+        .query(Friends.TableName, orderBy: "friendId");
     if (res.isNotEmpty) {
-      var friends =
-          res.map((friendMap) => Friend.fromDb(friendMap)).toList();
+      var friends = res.map((friendMap) => Friend.fromDb(friendMap)).toList();
       return friends;
     }
     return [];
   }
 
- static Future<List<Friend>> getWebFriendFriendsList() async {
+  static Future<List<Friend>> getWebFriendFriendsList() async {
     List<List<String>> records = await ApMeUtils.fetchData(
         ["105", AppParameters.currentUser, AppParameters.currentPassword]);
     List<Friend> _friends = [];
@@ -44,17 +42,16 @@ class Friends {
             friendId: records[i][0],
             firstName: records[i][1],
             lastName: records[i][2],
-            remark:"-"
-            );
+            lastSeen: int.parse(records[i][3]));
         _friends.add(tmpFriend);
         tmpFriend.insert();
       }
     Friend tmpFriend = new Friend(
-        friendId: AppParameters.currentUser,
-        firstName: "خودم",
-        lastName: "برای ذخیره",
-        remark: "",
-        );
+      friendId: AppParameters.currentUser,
+      firstName: "خودم",
+      lastName: "برای ذخیره",
+      lastSeen: 0,
+    );
 
     _friends.add(tmpFriend);
     tmpFriend.insert();
@@ -63,33 +60,37 @@ class Friends {
     return _friends;
   }
 
- static Future<void> clearAllLocalFriends() async {
-    var client = await AppDatabase().db;
-    return client.delete(Friends.TableName);
+  static Future<void> clearAllLocalFriends() async {
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(Friends.TableName);
   }
-
 }
-
-
 
 class Friend {
   @required
-  final String friendId;
+  String friendId;
   @required
   final String firstName;
   @required
   final String lastName;
   @required
-  final String remark;
-  
-  Friend(
-      {this.friendId,
-      this.firstName,
-      this.lastName,
-      this.remark,
-      });// {}
-  
-  String get avatarUrl{
+  final int lastSeen;
+
+  Friend({
+    this.friendId,
+    this.firstName,
+    this.lastName,
+    this.lastSeen,
+  }); // {}
+
+  DateTime _lastSeenTime;
+  DateTime getLastSeenTime() {
+    if (_lastSeenTime == null)
+      _lastSeenTime = DateTime.fromMillisecondsSinceEpoch(this.lastSeen * 1000);
+    return _lastSeenTime;
+  }
+
+  String get avatarUrl {
     return AppParameters.userAvatarUrl(this.friendId);
   }
 
@@ -98,7 +99,7 @@ class Friend {
       'friendId': friendId,
       'firstName': firstName,
       'lastName': lastName,
-      'remark': remark,      
+      'lastSeen': lastSeen,
     };
   }
 
@@ -106,12 +107,12 @@ class Friend {
       : friendId = map['friendId'],
         firstName = map['firstName'],
         lastName = map['lastName'],
-        remark = map['remark']      
-        ;
+        lastSeen = map['lastSeen'];
 
-  Future<Friend> fetchLocal(int friendId) async {
-    var client = await AppDatabase().db;
-    final Future<List<Map<String, dynamic>>> futureMaps = client.query(
+  Future<Friend> fetchLocal(String friendId) async {
+    //var client = await AppDb.db;
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
       Friends.TableName,
       where: 'friendId = ?',
       whereArgs: [friendId],
@@ -125,25 +126,25 @@ class Friend {
   }
 
   Future<int> insert() async {
-    var client = await AppDatabase().db;
-    int result = await client.insert(Friends.TableName, toMapForDb(),
+    //var client = await AppDb.db;
+    int result = await AppDatabase.currentDB.insert(
+        Friends.TableName, toMapForDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print("Insert Result : " + result.toString());
+    print("Friend Insert Result : " + result.toString());
     return result;
   }
 
   Future<int> update() async {
-    var client = await AppDatabase().db;
-    return client.update(Friends.TableName, toMapForDb(),
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.update(Friends.TableName, toMapForDb(),
         where: 'friendId = ?',
         whereArgs: [friendId],
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> delete() async {
-    var client = await AppDatabase().db;
-    return client.delete(Friends.TableName,
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(Friends.TableName,
         where: 'friendId = ?', whereArgs: [friendId]);
   }
-
 }

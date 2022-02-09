@@ -4,9 +4,9 @@ Connect device with USB Cable.
 adb tcpip 5555
 adb connect 192.168.1.5 Samsung J5
 adb connect 192.168.1.2 Xperia-X
+adb connect 192.168.1.7 Z3
 
  Unplug device start to debug.
 
- To go back to usb mode
- adb disconnect 192.168.1.5
- adb usb
+Build APK:
+ flutter build apk --split-per-abi

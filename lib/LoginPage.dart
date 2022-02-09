@@ -1,5 +1,6 @@
 import 'package:ap_me/AppSettings.dart';
 import 'package:ap_me/FriendsPage.dart';
+import 'package:flutter/services.dart';
 
 import 'ApMeUtils.dart';
 import 'AppParameters.dart';
@@ -7,6 +8,7 @@ import 'AppParameters.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:get_version/get_version.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -16,13 +18,79 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final txtUserNameController = TextEditingController();
   final txtPasswordController = TextEditingController();
-  String formMessage = "";
+  String formMessage = "...";
   bool isLoading = false;
+
+  bool _canCheckBiometric = false;
+  List<BiometricType> _availableBiometrics = [];
+  String _autherized = "Not Autherized";
+  LocalAuthentication auth = LocalAuthentication();
+
+  Future<void> _checkBiometrics() async {
+    bool canCheckBiometric = false;
+    try {
+      canCheckBiometric = await auth.canCheckBiometrics;
+    } on PlatformException catch (e) {
+      print("Error: $e");
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _canCheckBiometric = canCheckBiometric;
+    });
+  }
+
+  Future<void> _getAvailableBiometric() async {
+    List<BiometricType> availableBiometrics = [];
+    try {
+      availableBiometrics = await auth.getAvailableBiometrics();
+    } on PlatformException catch (e) {
+      print(e);
+    }
+
+    setState(() {
+      _availableBiometrics = availableBiometrics;
+    });
+  }
+
+  void _getVer() async {
+    try {
+      formMessage = await GetVersion.projectVersion;
+      formMessage = "Version : " + formMessage;
+    } on PlatformException {
+      formMessage = 'Failed to get platform version.';
+    }
+    //setState(() {});
+  }
+
+  Future<void> _authenticate() async {
+    bool authenticated = false;
+
+    try {
+      authenticated = await auth.authenticateWithBiometrics(
+          localizedReason: "حسگر را لمس کنید",
+          useErrorDialogs: true,
+          stickyAuth: false);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    if (!mounted) return;
+    _autherized = authenticated ? "Autherized success" : "Failed to Autherize";
+
+    print(_autherized);
+    if (authenticated) {
+      txtUserNameController.text = AppParameters.lastLoggedUser;
+      txtPasswordController.text = await AppParameters.getlastLoggedPassword();
+      doLogin();
+    }
+  }
 
   @override
   void initState() {
     txtUserNameController.text = AppParameters.lastLoggedUser;
-
+    _checkBiometrics();
+    _getAvailableBiometric();
+    _getVer();
     //passwordController.text = AppParameters.currentPassword;
     super.initState();
   }
@@ -94,16 +162,26 @@ class _LoginPageState extends State<LoginPage> {
                                 child: Center(
                                   child: Text(
                                     "ورود",
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontFamily: "Vazir",
-                                        color: Colors.white,
-                                        fontSize: 25),
+                                      fontFamily: "Vazir",
+                                      color: Colors.white,
+                                      fontSize: 25,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
+                      ),
+                      Visibility(
+                        child: IconButton(
+                            iconSize: 70,
+                            onPressed: _authenticate,
+                            color: Colors.blue,
+                            icon: Icon(Icons.fingerprint_outlined)),
+                        visible: _canCheckBiometric,
                       ),
                       Text(formMessage,
                           textAlign: TextAlign.center,
@@ -240,6 +318,12 @@ class _LoginPageState extends State<LoginPage> {
                   settingName: "lastUser",
                   settingValue: AppParameters.currentUser)
               .insert();
+
+          AppSetting(
+                  settingName: "lastLoggedPassword",
+                  settingValue: AppParameters.currentPassword)
+              .insert();
+
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
           formMessage = "نام کاربری و گذرواژه خود را وارد کنید";

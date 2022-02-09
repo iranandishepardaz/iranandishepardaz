@@ -5,9 +5,7 @@ import 'package:ap_me/TempMessages.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:io';
 import 'package:meta/meta.dart';
-import 'package:http/http.dart';
 
 class ApMeMessages {
   static const String TableName = "Messages";
@@ -32,9 +30,9 @@ class ApMeMessages {
   }
 
   static Future<List<ApMeMessage>> getLocalMessages(int count) async {
-    var client = await AppDatabase().db;
-    var res = await client.query(ApMeMessages.TableName,
-        limit: count, orderBy: "messageId ASC, fromId ASC");
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB.query(ApMeMessages.TableName,
+        limit: count, orderBy: "messageId DESC, fromId ASC");
     if (res.isNotEmpty) {
       var messages =
           res.map((messageMap) => ApMeMessage.fromDb(messageMap)).toList();
@@ -44,14 +42,14 @@ class ApMeMessages {
   }
 
   static Future<int> localMessagesCount() async {
-    var client = await AppDatabase().db;
-    return Sqflite.firstIntValue(await client
+    //var client = await AppDb.db;
+    return Sqflite.firstIntValue(await AppDatabase.currentDB
         .rawQuery('SELECT COUNT(*) FROM ' + ApMeMessages.TableName));
   }
 
   static Future<List<ApMeMessage>> getLocalUnuploadedMessages(int count) async {
-    var client = await AppDatabase().db;
-    var res = await client.query(ApMeMessages.TableName,
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB.query(ApMeMessages.TableName,
         where: '(Uploaded = 0 )',
         limit: count,
         orderBy: "messageId ASC, fromId ASC");
@@ -107,10 +105,85 @@ class ApMeMessages {
         allMessages.add(tmpMessage);
         if (saveLocal) {
           tmpMessage.insert();
+          //if (await tmpMessage.insert() == 0) tmpMessage.update();
         }
       }
     }
     syncMessages();
+    return allMessages;
+  }
+
+  static Future<List<ApMeMessage>> getPartnerMessagesBeforeFromWeb(
+      int count, bool justUnread, int timeUpperLimit) async {
+    List<ApMeMessage> allMessages = [];
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "202",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      count.toString(),
+      AppParameters.currentFriendId,
+      justUnread ? "1" : "0",
+      timeUpperLimit.toString()
+    ]);
+    if (records.length > 1) {
+      for (int i = 1; i < records.length; i++) {
+        ApMeMessage tmpMessage = ApMeMessage.fromWebRecord(records[i]);
+        tmpMessage.uploaded = 1;
+        try {
+          allMessages.add(tmpMessage);
+          if (await tmpMessage.update() == 0) {
+            await tmpMessage.insert();
+          }
+        } catch (Exception) {}
+        //
+        //  await tmpMessage.insert();
+        //
+      }
+    }
+    return allMessages;
+  }
+
+  static Future<List<ApMeMessage>> getUnsyncedMessagesFromWeb() async {
+    List<ApMeMessage> allMessages = [];
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "201",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      "30",
+    ]);
+    if (records.length > 1) {
+      for (int i = 1; i < records.length; i++) {
+        ApMeMessage tmpMessage = ApMeMessage.fromWebRecord(records[i]);
+        tmpMessage.uploaded = 1;
+        try {
+          allMessages.add(tmpMessage);
+          if (await tmpMessage.update() == 0) {
+            await tmpMessage.insert();
+          }
+        } catch (Exception) {}
+        //
+        //  await tmpMessage.insert();
+        //
+      }
+    }
+    return allMessages;
+  }
+
+  static Future<List<ApMeMessage>> getWebUnsyncedMessages() async {
+    List<ApMeMessage> allMessages = [];
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "110",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      "10",
+    ]);
+    if (records.length > 1) {
+      for (int i = 1; i < records.length; i++) {
+        ApMeMessage tmpMessage = ApMeMessage.fromWebRecord(records[i]);
+        tmpMessage.uploaded = 1;
+        await tmpMessage.update();
+      }
+    }
     return allMessages;
   }
 
@@ -176,7 +249,7 @@ class ApMeMessages {
     TempMessage tempMessage = new TempMessage(
       messageId: 0,
       fromId: AppParameters.currentUser,
-      toId: AppParameters.currentFriend,
+      toId: AppParameters.currentFriendId,
       messageBody: textToSend,
       sentAt: 0,
       deliveredAt: 0,
@@ -191,7 +264,7 @@ class ApMeMessages {
       "103",
       AppParameters.currentUser,
       AppParameters.currentPassword,
-      AppParameters.currentFriend,
+      AppParameters.currentFriendId,
       textToSend
     ]);
     if (records.length == 0) {
@@ -201,6 +274,7 @@ class ApMeMessages {
     if (records[0][0] == "103" && records[0][1] == "0") {
       ApMeMessage sentMessage = ApMeMessage.fromWebRecord(records[1]);
       //messageToSend.sentAt =( DateTime.now().millisecondsSinceEpoch~/1000);
+      sentMessage.uploaded = 1;
       sentMessage.insert();
       return sentMessage;
     } else {
@@ -210,28 +284,107 @@ class ApMeMessages {
     }
   }
 
-  static Future<void> clearAllLocalMessages() async {
-    var client = await AppDatabase().db;
-    return client.delete(ApMeMessages.TableName);
-  }
-
-  static Future<List<ApMeMessage>> getLocalFriendMessages() async {
-    var client = await AppDatabase().db;
-    var res = await client.query(
-      ApMeMessages.TableName,
-      where: '((fromId = ? And toId = ?) OR (toId = ? AND fromId = ?))',
-      whereArgs: [
-        AppParameters.currentUser,
-        AppParameters.currentFriend,
-        AppParameters.currentUser,
-        AppParameters.currentFriend,
-      ],
-      orderBy: 'sentAt ASC',
+  static Future<ApMeMessage> sendFileMessage(
+      String textToSend, String fileType, String base64File) async {
+    TempMessage tempMessage = new TempMessage(
+      messageId: 0,
+      fromId: AppParameters.currentUser,
+      toId: AppParameters.currentFriendId,
+      messageBody: textToSend,
+      sentAt: 0,
+      deliveredAt: 0,
+      seenAt: 0,
+      messageType: 0,
+      url: "",
+      deleted: 0,
+      uploaded: 0,
     );
 
-    if (res.isNotEmpty) {
+    List<List<String>> records = await ApMeUtils.fetchDataFileMessage([
+      "501",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      AppParameters.currentFriendId,
+      textToSend,
+      fileType
+    ], base64File);
+    if (records.length == 0) {
+      tempMessage.insert();
+      return null; //this means Send Message was not successful
+    }
+    if (records[0][0] == "501" && records[0][1] == "0") {
+      ApMeMessage sentMessage = ApMeMessage.fromWebRecord(records[1]);
+      //messageToSend.sentAt =( DateTime.now().millisecondsSinceEpoch~/1000);
+      sentMessage.uploaded = 1;
+      sentMessage.insert();
+      return sentMessage;
+    } else {
+      //Save as temporary Message and send them in group
+      tempMessage.insert();
+      return null; //this means Send Message was not successful
+    }
+  }
+
+  static Future<ApMeMessage> editTextMessage(ApMeMessage messageToEdit) async {
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "108",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      messageToEdit.messageId.toString(),
+      messageToEdit.messageBody
+    ]);
+    if (records.length == 0) {
+      return null; //this means edit Message was not successful
+    }
+    if (records[0][0] == "108" && records[0][1] == "0") {
+      return messageToEdit;
+    } else {
+      return null; //this means edit Message was not successful
+    }
+  }
+
+  static Future<ApMeMessage> deleteTextMessage(
+      ApMeMessage messageToDelete) async {
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "109",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      messageToDelete.messageId.toString(),
+      messageToDelete.messageBody
+    ]);
+    if (records.length == 0) {
+      return null; //this means edit Message was not successful
+    }
+    if (records[0][0] == "109" && records[0][1] == "0") {
+      return messageToDelete;
+    } else {
+      return null; //this means edit Message was not successful
+    }
+  }
+
+  static Future<void> clearAllLocalMessages() async {
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(ApMeMessages.TableName);
+  }
+
+  static Future<List<ApMeMessage>> getLocalFriendMessages(int count) async {
+    //var client = await AppDb.db;
+    var result = await AppDatabase.currentDB.query(
+      ApMeMessages.TableName,
+      where: '((fromId = ? And toId = ?) OR (toId = ? AND fromId = ?))',
+      limit: count,
+      whereArgs: [
+        AppParameters.currentUser,
+        AppParameters.currentFriendId,
+        AppParameters.currentUser,
+        AppParameters.currentFriendId,
+      ],
+      orderBy: 'sentAt DESC',
+    );
+
+    if (result.isNotEmpty) {
       var messages =
-          res.map((messageMap) => ApMeMessage.fromDb(messageMap)).toList();
+          result.map((messageMap) => ApMeMessage.fromDb(messageMap)).toList();
       return messages;
     }
     return [];
@@ -239,8 +392,8 @@ class ApMeMessages {
 
   static Future<List<ApMeMessage>> getLocalFriendLastMessage(
       String friendId) async {
-    var client = await AppDatabase().db;
-    var res = await client.query(
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB.query(
       ApMeMessages.TableName,
       where: '((fromId = ? And toId = ?) OR (toId = ? AND fromId = ?))',
       whereArgs: [
@@ -281,6 +434,7 @@ class ApMeMessage {
   int uploaded = 0;
   int downloaded = 0;
   DateTime _sentAtTime;
+  bool isEditting = false;
 
   ApMeMessage({
     this.messageId,
@@ -295,7 +449,7 @@ class ApMeMessage {
     this.deleted,
     this.uploaded,
     this.downloaded,
-  }) {} //int  intSentAt = ((int.parse(sentAt)/100000) as int )+ 621355968000000000;
+  }); //int  intSentAt = ((int.parse(sentAt)/100000) as int )+ 621355968000000000;
   DateTime getSentAtTime() {
     if (_sentAtTime == null)
       _sentAtTime = DateTime.fromMillisecondsSinceEpoch(sentAt * 1000);
@@ -379,8 +533,9 @@ class ApMeMessage {
   }
 
   Future<ApMeMessage> fetch(int messageId, String fromId) async {
-    var client = await AppDatabase().db;
-    final Future<List<Map<String, dynamic>>> futureMaps = client.query(
+    //var client = await AppDb.db;
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
       ApMeMessages.TableName,
       where: 'messageId = ? And fromId = ?',
       whereArgs: [messageId, fromId],
@@ -395,35 +550,43 @@ class ApMeMessage {
   }
 
   Future<int> insert() async {
-    var client = await AppDatabase().db;
-    int result = await client.insert(ApMeMessages.TableName, toMapForDb(),
-        conflictAlgorithm: ConflictAlgorithm.fail);
-    print("Insert Result : " + result.toString());
+    int result = 0;
+    try {
+      //var client = await AppDb.db;
+      result = await AppDatabase.currentDB.insert(
+          ApMeMessages.TableName, toMapForDb(),
+          conflictAlgorithm: ConflictAlgorithm.fail);
+    } catch (e) {}
+    print("Message Insert Result: " + result.toString());
     return result;
   }
 
   Future<int> update() async {
-    var client = await AppDatabase().db;
+    int result = 0;
+    //var client = await AppDb.db;
     print("Updating Message : from " +
         fromId +
         " to " +
         toId +
         " Up " +
         uploaded.toString());
-    return client.update(ApMeMessages.TableName, toMapForDb(),
+    result = await AppDatabase.currentDB.update(
+        ApMeMessages.TableName, toMapForDb(),
         where: 'messageId = ? And fromId = ?',
         whereArgs: [messageId, fromId],
         conflictAlgorithm: ConflictAlgorithm.replace);
+    print("Update Result : " + result.toString());
+    return result;
   }
 
-  Future<void> delete() async {
-    var client = await AppDatabase().db;
-    return client.delete(ApMeMessages.TableName,
+  Future<int> delete() async {
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(ApMeMessages.TableName,
         where: 'messageId = ? And fromId = ?', whereArgs: [messageId, fromId]);
   }
 
   Future closeDb() async {
-    var client = await AppDatabase().db;
-    client.close();
+    //var client = await AppDb.db;
+    await AppDatabase.currentDB.close();
   }
 }

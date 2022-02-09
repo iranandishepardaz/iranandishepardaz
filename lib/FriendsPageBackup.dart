@@ -1,11 +1,10 @@
-import 'dart:async';
+/*import 'dart:async';
 import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/LoginDialog.dart';
-import 'package:ap_me/OptionsDrawer.dart';
+import 'package:ap_me/AppSettingsPage.dart';
 import 'package:ap_me/ShortMessages.dart';
 
 import 'Friends.dart';
-import 'AdminPage.dart';
+import 'MainPage.dart';
 import 'NotificationTester.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -30,7 +29,6 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   List<FriendModel> friendModels = [];
   List<Friend> _friends;
   bool isLoading = false;
-  bool initialized = false;
   bool canSeeLastSeen = AppParameters.currentUser == "akbar" ||
       AppParameters.currentUser == "sohail";
   int _newMessagesCount = 0;
@@ -39,26 +37,19 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    _startTimer();
     WidgetsBinding.instance.addObserver(this);
     initNotif();
-    super.initState();
-    initialize();
-  }
 
-  void initialize() async {
-    //if (AppParameters.currentUser != 'akbar')
-    await ShortMessages.getSaveUploadMessages(
-        AppParameters.currentUser != 'akbar' ? 150 : 20);
+    ShortMessages.getSaveUploadMessages(150);
     AppSetting(
             settingName: "lastLoggedUser",
             settingValue: AppParameters.currentUser)
         .insert();
-    try {
-      await refreshFriends();
-    } catch (e) {}
-    initialized = true;
-    setState(() {});
-    _startRefreshTimer();
+    super.initState();
+    //_saveSMSTimer();
+    //refreshFriendsLastSeenAndMessages();
+    getFriendsAndLastMessages(false);
   }
 
   @override
@@ -74,13 +65,14 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.resumed:
         print("FriendsPage status: resumed");
+
         AppParameters.pausedSeconds =
             DateTime.now().difference(AppParameters.pausedTime).inSeconds;
         if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
           backToLoginPage();
         } else {
           blnTimerInitialized = false;
-          _startRefreshTimer();
+          _startTimer();
         }
         break;
       case AppLifecycleState.inactive:
@@ -103,52 +95,37 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
       backToLoginPage();
     }
-    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    //   statusBarColor: AppParameters
-    //        .titlesForegroundColor, //or set color with: Color(0xFF0000FF)
-    // ));
     return RefreshIndicator(
         onRefresh: () {
-          if (initialized) refreshFriends();
+          refreshFriendsLastSeenAndMessages();
           return Future.delayed(Duration(seconds: 1), () {});
         },
         child: Scaffold(
             appBar: AppBar(
-              //textTheme: TextTheme(),
-              //textTheme: TextTheme(bodyText1: TextStyle(color: Colors.yellow)),
-              backgroundColor: AppParameters.titlesBackgroundColor,
-              foregroundColor: AppParameters.titlesForegroundColor,
-              //shadowColor: AppParameters.titlesForegroundColor,
-              //backgroundColor: Colors.red[400],
-              brightness:
-                  AppSettings.nightMode ? Brightness.dark : Brightness.light,
-              centerTitle: false,
-              titleSpacing: 0.0,
-              leadingWidth: 35,
+              backgroundColor: Colors.green[300],
               leading: IconButton(
                   icon: Icon(Icons.arrow_back_ios),
-                  color: AppParameters.formsForegroundColor,
+                  color: Colors.white,
                   onPressed: () => {
                         backToLoginPage(),
                       }),
               actions: <Widget>[
                 Visibility(
                   child: Container(
-                      child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: CircularProgressIndicator(
-                      backgroundColor: AppParameters.titlesForegroundColor,
-                      strokeWidth: 4,
-                    ),
-                  )),
-                  visible: isLoading || !initialized,
+                      width: 50,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.red,
+                        strokeWidth: 4,
+                      )),
+                  visible: isLoading,
                 ),
                 Visibility(
                   child: Container(
                     width: 50,
                     height: 10,
                     child: IconButton(
-                      color: AppParameters.formsForegroundColor,
+                      color: Colors.white,
                       onPressed: () {
                         getFriendsAndLastMessages(false);
                         //openNotPage();
@@ -156,7 +133,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                       icon: Icon(Icons.cloud_download),
                     ),
                   ),
-                  visible: !isLoading && initialized,
+                  visible: !isLoading,
                 ),
                 Visibility(
                   child: Container(
@@ -165,76 +142,52 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                     child: IconButton(
                       color: Colors.white,
                       onPressed: openMainPage,
-                      icon: Icon(
-                        Icons.admin_panel_settings,
-                        color: AppParameters.formsForegroundColor,
-                      ),
+                      icon: Icon(Icons.admin_panel_settings),
                     ),
                   ),
                   visible: canSeeLastSeen,
                 ),
               ],
               title: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      LoginDialog().showNetworkImage(
-                          AppParameters.currentUserAvatarUrl(), this.context);
-                    },
-                    child: CircleAvatar(
-                      radius: 24.0,
-                      backgroundImage:
-                          NetworkImage(AppParameters.currentUserAvatarUrl()),
-                    ),
+                  CircleAvatar(
+                    radius: 24.0,
+                    backgroundImage:
+                        NetworkImage(AppParameters.currentUserAvatarUrl()),
                   ),
                   Text(
-                    // AppParameters.prefix +
-                    //    " " +
-                    AppParameters.firstName + " " + AppParameters.lastName,
-                    style: TextStyle(
-                        fontSize: AppParameters.messageFontSize + 2,
-                        color: AppParameters.titlesForegroundColor),
+                    AppParameters.prefix +
+                        " " +
+                        AppParameters.firstName +
+                        " " +
+                        AppParameters.lastName,
+                    style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
             ),
             body: Container(
-              decoration: new BoxDecoration(
-                border: new Border.all(
-                    color: AppParameters.titlesBackgroundColor, width: 4),
-                color: AppParameters.formsBackgroundColor,
-              ),
               child: ListView.builder(
                 itemCount: friendModels.length,
                 itemBuilder: (context, index) {
                   FriendModel _model = friendModels[index];
                   return Column(
                     children: <Widget>[
+                      Divider(
+                        height: 12.0,
+                      ),
                       ListTile(
                         onTap: () {
-                          openChatPage(_model.id, _model.name);
+                          openChatPage(_model.id);
                         },
-                        leading: GestureDetector(
-                          onTap: () {
-                            return LoginDialog().showNetworkImage(
-                                _model.avatarUrl, this.context);
-                          },
-                          child: CircleAvatar(
-                            radius:
-                                26.0, // AppParameters.messageFontSize * 1.5,
-                            backgroundImage: NetworkImage(
-                                _model.avatarUrl), //_model.avatarUrl),
-                          ),
+                        leading: CircleAvatar(
+                          radius: 24.0,
+                          backgroundImage: NetworkImage(
+                              _model.avatarUrl), //_model.avatarUrl),
                         ),
                         title: Row(
                           children: <Widget>[
-                            Text(
-                              _model.name,
-                              style: new TextStyle(
-                                color: AppParameters.formsForegroundColor,
-                              ),
-                            ),
+                            Text(_model.name),
                             SizedBox(
                               width: 26.0,
                             ),
@@ -243,7 +196,6 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                                   ? _model.datetime + "\n" + _model.lastSeen
                                   : _model.datetime,
                               style: TextStyle(
-                                  color: AppParameters.formsForegroundColor,
                                   fontSize: AppParameters.messageDateFontSize),
                             ),
                           ],
@@ -251,59 +203,107 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                         subtitle: Text(
                           _model.message,
                           style: TextStyle(
-                              color: AppParameters.formsForegroundColor,
                               fontSize: AppParameters.messageFontSize),
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
                           size: 14.0,
-                          color: AppParameters.formsForegroundColor,
                         ),
                       ),
-                      Divider(
-                        color: AppParameters.titlesForegroundColor,
-                        height: 5.0,
-                      ),
-                      SizedBox(
-                        height: 20,
-                      )
                     ],
                   );
                 },
               ),
             ),
-            endDrawer: OptionsDrawer.SideDrawer(this)));
+            endDrawer: Container(
+              width: 200,
+              child: Drawer(
+                child: ListView(
+                  children: <Widget>[
+                    UserAccountsDrawerHeader(
+                        accountName: Text("ApMe "),
+                        accountEmail: Text(
+                          " ",
+                          // "نام‌کاربری" + ":" + "  " + App_Parameters.currentUserName,
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.center,
+                        ),
+                        currentAccountPicture: CircleAvatar(
+                          backgroundImage: AssetImage("assets/apmeLogo.png"),
+                        )),
+                    ListTile(
+                      title: Text(
+                        "Settings",
+                        textDirection: TextDirection.rtl,
+                      ),
+                      leading: Icon(Icons.settings),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                              transitionDuration: Duration(milliseconds: 300),
+                              pageBuilder: (BuildContext context,
+                                  Animation<double> animation,
+                                  Animation<double> secAnimation) {
+                                return AppSettingsPage();
+                              },
+                              transitionsBuilder: (BuildContext context,
+                                  Animation<double> animation,
+                                  Animation<double> secAnimation,
+                                  Widget child) {
+                                return SlideTransition(
+                                  child: child,
+                                  position: Tween<Offset>(
+                                          begin: Offset(1, 0),
+                                          end: Offset(0, 0))
+                                      .animate(CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeInOutSine)),
+                                );
+                              }),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      title: Text(
+                        "فونت درشت‌تر",
+                        textDirection: TextDirection.rtl,
+                      ),
+                      leading: Icon(Icons.plus_one),
+                      onTap: () {
+                        setState(() {
+                          AppParameters.messageFontSize++;
+                          AppSetting(
+                                  settingName: "messageFontSize",
+                                  settingValue:
+                                      AppParameters.messageFontSize.toString())
+                              .insert();
+                        });
+                      },
+                    ),
+                    ListTile(
+                      title: Text(
+                        "فونت ریزتر",
+                        textDirection: TextDirection.rtl,
+                      ),
+                      leading: Icon(Icons.exposure_minus_1),
+                      onTap: () {
+                        setState(() {
+                          AppParameters.messageFontSize--;
+                          AppSetting(
+                                  settingName: "messageFontSize",
+                                  settingValue:
+                                      AppParameters.messageFontSize.toString())
+                              .insert();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )));
   }
 
-  void _startRefreshTimer() {
-    if (!blnTimerInitialized) {
-      blnTimerInitialized = true;
-      tmrFriendsDataRefresher =
-          Timer.periodic(AppParameters.messageRefreshPeriod, (timer) {
-        refreshFriends();
-      });
-    }
-  }
-
-  Future<void> refreshFriends() async {
-    if (isLoading) {
-      print(DateTime.now().toString() +
-          " FriendsPage web refreshing Cancelled ...");
-      return;
-    }
-    isLoading = true;
-    try {
-      print(DateTime.now().toString() + " FriendsPage web refreshing ...");
-      await getFriendsAndLastMessages(true);
-      int recordsCount = await ApMeMessages.localMessagesCount();
-      if (recordsCount < 10)
-        await ApMeMessages.getWebNewMessages(true);
-      else
-        await ApMeMessages.getUnsyncedMessagesFromWeb();
-    } catch (Exception) {}
-    isLoading = false;
-  }
-  /*void _startTimer() {
+  void _startTimer() {
     if (!blnTimerInitialized) {
       blnTimerInitialized = true;
       tmrFriendsDataRefresher =
@@ -329,7 +329,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     await getFriendsAndLastMessages(true);
     isLoading = false;
   }
-*/
+
   /* void _saveSMSTimer() {
     Timer.periodic(AppParameters.saveSMSPeriod, (timer) async {
       timer.cancel();
@@ -342,13 +342,10 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   Future getFriendsAndLastMessages(bool fromWeb) async {
     isLoading = true;
     setState(() {});
-    if (_friends == null) _friends = [];
+    _friends = await Friends.getLocalFriendsList();
     if (_friends.length < 2 || fromWeb) {
       _friends = await Friends.getWebFriendFriendsList();
     }
-    /*else {
-      _friends = await Friends.getLocalFriendsList();
-    }*/
     friendModels = [];
     await generateFriendModel();
     if (AppParameters.newMessagesCount > 0)
@@ -358,6 +355,8 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     setState(() {
       isLoading = false;
       print(DateTime.now().toString() + " FriendsPage Local refresh done.");
+      // _showNotification("آپدیت شد");
+      //_showNotification();
     });
   }
 
@@ -410,10 +409,8 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   //   });
   // }
 
-  void openChatPage(String friendId, String friendName) async {
+  void openChatPage(String friendId) async {
     AppParameters.currentFriendId = friendId;
-    AppParameters.currentFriendName = friendName;
-
     // AppParameters.currentF = new Friend();
     // AppParameters.currentF.friendId = friend_Id;
     // await AppParameters.currentF.fetchLocal(friend_Id);
@@ -425,16 +422,9 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     //     .push(MaterialPageRoute(builder: (context) => ChatPage()));
   }
 
-  final txtUserNameController = TextEditingController();
-  final txtPasswordController = TextEditingController();
-  String formMessage = "وارد شوید";
   void openMainPage() {
-    if (AppParameters.currentUser == 'admin')
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => AdminPage()));
-    else {
-      return LoginDialog().showLoginDialog(this.context);
-    }
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => MainPage()));
     // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }
 
@@ -532,10 +522,8 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   }
 
   void backToLoginPage() {
-    try {
-      tmrFriendsDataRefresher.cancel();
-      Navigator.of(context).pop();
-    } catch (exp) {}
+    tmrFriendsDataRefresher.cancel();
+    Navigator.of(context).pop();
   }
 
   Future _showNotification() async {
@@ -577,3 +565,4 @@ class FriendModel {
       this.datetime,
       this.message});
 }
+*/

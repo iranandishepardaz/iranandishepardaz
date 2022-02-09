@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 
 import 'package:ap_me/FriendsPage.dart';
@@ -7,7 +8,7 @@ import 'ApMeUtils.dart';
 import 'AppParameters.dart';
 import 'package:flutter/material.dart';
 import 'ApMeMessages.dart';
-import 'MessageBubble.dart';
+import 'MessageBubbleFull.dart';
 
 class CattingPage extends StatefulWidget {
   @override
@@ -16,12 +17,11 @@ class CattingPage extends StatefulWidget {
 
 class _CattingPageState extends State<CattingPage> {
   String textToSend;
-  List<MessageBubble> messageBubbles = [];
+  List<MessageBubbleFull> messageBubbles = [];
   List<ApMeMessage> messages = [];
   List<TempMessage> tempMessages = [];
   final messageBodyTextController = TextEditingController();
   bool isLoading = false;
-
 
   @override
   Widget build(BuildContext context) {
@@ -30,3 +30,4 @@ class _CattingPageState extends State<CattingPage> {
     );
   }
 }
+*/

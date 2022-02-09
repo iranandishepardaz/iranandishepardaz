@@ -75,7 +75,7 @@ class PersianDateUtil {
     try {
       output += DayOfWeek(Gr_Date);
       output += " " + MItoSH(Gr_Date) + " ";
-      output += Gr_Date.hour.toString() + ":" + Gr_Date.minute.toString();
+      output += Gr_Date.hour.toString().padLeft(2, '0') + ":" + Gr_Date.minute.toString().padLeft(2, '0');
     } catch (exn) {}
     return output;
   }
