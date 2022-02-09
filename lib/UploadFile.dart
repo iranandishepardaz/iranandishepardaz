@@ -6,16 +6,16 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 
-class FileUploader extends StatefulWidget {
-  FileUploader() : super();
+class UploadFile extends StatefulWidget {
+  UploadFile() : super();
 
   final String title = "Upload Image message";
 
   @override
-  FileUploaderState createState() => FileUploaderState();
+  UploadFileState createState() => UploadFileState();
 }
 
-class FileUploaderState extends State<FileUploader> {
+class UploadFileState extends State<UploadFile> {
   //static final String uploadEndPoint = AppParameters.mainSiteURL+;
   Future<File> file;
   String status = '';
@@ -24,14 +24,13 @@ class FileUploaderState extends State<FileUploader> {
   String errMessage = 'Error Uploading Image';
   static String url = AppParameters.mainSiteURL;
   static String serviceName = "MesServices.asmx";
-  static String operation =
-      "UploadFile"; //این یک عملکرد به جز بقسه موارد هست که برای بقیه امور استفاده میشود
+  static String operation = "SendFileMessage";
+  // "SendFileMessage"; //این یک عملکرد به جز بقسه موارد هست که برای بقیه امور استفاده میشود
   static Future<Response> uploadFile(
       List<String> parameters, String base64File) async {
-    String result = "";
-
-    Response response;
-
+    Response result;
+    operation = "UploadFile";
+    //operation = "SendFileMessage";
     Map<String, String> headers = {
       'Content-Type': 'text/xml; charset=utf-8',
       'SOAPAction': 'http://tempuri.org/$operation'
@@ -60,7 +59,7 @@ class FileUploaderState extends State<FileUploader> {
     soap += "</soap:Envelope>";
 
     try {
-      response = await post(
+      result = await post(
         url + serviceName,
         headers: headers,
         body: utf8.encode(soap),
@@ -81,8 +80,7 @@ class FileUploaderState extends State<FileUploader> {
     } catch (e) {
       print("O my god site is down : " + e.toString());
     }
-    return response;
-    //return result;
+    return result;
   }
 
   chooseImage() {
@@ -114,7 +112,13 @@ class FileUploaderState extends State<FileUploader> {
       AppParameters.currentUser,
       AppParameters.currentPassword,
       AppParameters.currentFriendId,
-      "File Message"
+      "File Sent at " +
+          DateTime.now().hour.toString() +
+          ":" +
+          DateTime.now().minute.toString() +
+          ":" +
+          DateTime.now().second.toString(),
+      fileName.split(".").last
     ], base64Image);
     /*post(uploadEndPoint, body: {
       "image": base64Image,
@@ -172,6 +176,7 @@ class FileUploaderState extends State<FileUploader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.brown,
       appBar: AppBar(
         title: Text("Upload File"),
       ),

@@ -2,18 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
-
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 Future _showNotification() async {
-  var AndSpec = new AndroidNotificationDetails(
+  var androidSpec = new AndroidNotificationDetails(
       'EDApps', 'FlutterTutorials', 'Learn And Run Quizzes',
       playSound: true, importance: Importance.Max, priority: Priority.High);
 
-  var IOSSpec = new IOSNotificationDetails(presentSound: false);
+  var iosSpec = new IOSNotificationDetails(presentSound: false);
 
-  var platformChannelSpecifics = new NotificationDetails(AndSpec, IOSSpec);
+  var platformChannelSpecifics = new NotificationDetails(androidSpec, iosSpec);
 
   await flutterLocalNotificationsPlugin.show(
     0,
@@ -24,12 +22,10 @@ Future _showNotification() async {
   );
 }
 
-
 class NotificationTester extends StatefulWidget {
   @override
   _MyAppState createState() => new _MyAppState();
 }
-
 
 class _MyAppState extends State<NotificationTester> {
   Future onSelectNotification(String payload) async {
@@ -48,12 +44,12 @@ class _MyAppState extends State<NotificationTester> {
   initState() {
     super.initState();
 
-    var AndSetting = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var androidSpec = new AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    var IOSSetting = new IOSInitializationSettings();
+    var iosSpec = new IOSInitializationSettings();
 
     var initializationSettings =
-        new InitializationSettings(AndSetting, IOSSetting);
+        new InitializationSettings(androidSpec, iosSpec);
 
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
@@ -70,7 +66,7 @@ class _MyAppState extends State<NotificationTester> {
             title: new Text('Notification With Default Sound'),
           ),
           body: Center(
-            child: RaisedButton(
+            child: ElevatedButton(
               onPressed: _showNotification,
               child: new Text('Notification Without Sound'),
             ),

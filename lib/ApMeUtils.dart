@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ap_me/ApMeUsers.dart';
-
 import 'AppParameters.dart';
-import 'ApMeMessages.dart';
 import 'package:http/http.dart';
 
 //Parameters:
@@ -35,7 +32,13 @@ class ApMeUtils {
   static String url = AppParameters.mainSiteURL;
   static String serviceName = "MesServices.asmx";
 
-  static Future fetchDataFull(String operation, List<String> parameters) async {
+  static Future transactWithSite(
+      String operation, List<String> parameters) async {
+    return await transactWithSiteFull(operation, parameters, "");
+  }
+
+  static Future transactWithSiteFull(
+      String operation, List<String> parameters, String base64File) async {
     String result = "";
     Map<String, String> headers = {
       'Content-Type': 'text/xml; charset=utf-8',
@@ -51,13 +54,23 @@ class ApMeUtils {
     soap += "<$operation xmlns=\"http://tempuri.org/\">";
     if (parameters.length > 0) {
       soap += "<Parameters>";
-      for (int i = 0; i < parameters.length; i++)
-        soap += "<string>" + parameters[i] + "</string>";
+      for (int i = 0; i < parameters.length; i++) {
+//        String tmpParam =utf8.encode( parameters[i]);
+        //  var pdfText = await json.decode(json.encode(parameters[i]));
+        var pdfText = parameters[i];
+        soap += "<string>" + pdfText + "</string>";
+      }
       soap += "</Parameters>";
+    }
+    if (base64File.length > 0) {
+      soap += "<f>";
+      soap += base64File;
+      soap += "</f>";
     }
     soap += "</$operation>";
     soap += "</soap:Body>";
     soap += "</soap:Envelope>";
+    //var bbody = json.encode(utf8.encode(soap));
     try {
       Response response = await post(
         url + serviceName,
@@ -66,10 +79,10 @@ class ApMeUtils {
       ).timeout(const Duration(seconds: 10), onTimeout: () {
         throw TimeoutException("Check Connection");
       }
-      // ).timeout(const Duration(seconds: 10),onTimeout: () {
-      //   throw TimeoutException("Connection timed out");
-      // }
-      );
+          // ).timeout(const Duration(seconds: 10),onTimeout: () {
+          //   throw TimeoutException("Connection timed out");
+          // }
+          );
 
       if (response.statusCode == 200) {
         //successful
@@ -80,10 +93,10 @@ class ApMeUtils {
           result = result.substring(0, index);
         } else {}
       } else {
-        //return ("Error:" + response.statusCode.toString());
+        return ("Web request error:" + response.statusCode.toString());
       }
     } catch (e) {
-      print("O my god site is down : " + e.toString());
+      print("Oh my god site is down : " + e.toString());
     }
     return result;
   }
@@ -132,12 +145,24 @@ class ApMeUtils {
   }
 
   static Future<List<List<String>>> fetchData(List<String> parameters) async {
-    String serverResponse = await fetchDataFull("MeSer", parameters);
+    String serverResponse = await transactWithSite("MeSer", parameters);
+    List<List<String>> records = decodeServerMessage(serverResponse);
+    return records;
+  }
+
+  static Future<List<List<String>>> fetchDataFileMessage(
+      List<String> parameters, String base64File) async {
+    String serverResponse =
+        await transactWithSiteFull("UploadFile", parameters, base64File);
     List<List<String>> records = decodeServerMessage(serverResponse);
     return records;
   }
 
   static Future<List<String>> getUserInfo() async {
+    if (AppParameters.currentUser.length < 4 ||
+        AppParameters.currentPassword.length < 4) {
+      return ["-3"];
+    }
     List<List<String>> _records = await fetchData(
         ["101", AppParameters.currentUser, AppParameters.currentPassword]);
     try {

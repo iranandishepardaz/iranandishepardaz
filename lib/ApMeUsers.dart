@@ -1,5 +1,5 @@
 // import 'package:ap_me/ApMeUtils.dart';
-// import 'package:ap_me/AppDatabase.dart';
+// import 'package:ap_me/AppDb.dart';
 // import 'package:ap_me/AppParameters.dart';
 // import 'package:http/http.dart';
 // import 'package:sqflite/sqflite.dart';
@@ -12,8 +12,8 @@
 //   static const String TableName = "Users";
 
 //   static Future<List<ApMeUser>> getLocalFriendsList() async {
-//     var client = await AppDatabase().db;
-//     var res = await client.query(Users.TableName,
+//     //var client = await AppDb.db;
+//     var res = await AppDatabase.currentDB.query(Users.TableName,
 //         orderBy: "userId");
 //     if (res.isNotEmpty) {
 //       var users =
@@ -53,15 +53,15 @@
 //   }
 
 //  static Future<void> clearAllLocalUsers() async {
-//     var client = await AppDatabase().db;
+//     //var client = await AppDb.db;
 //     return client.delete(Users.TableName);
 //   }
 
 
 // /*
 //   static Future<List<ApMeUser>> fetchFriendUsers() async {
-//     var client = await AppDatabase().db;
-//     var res = await client.query(
+//     //var client = await AppDb.db;
+//     var res = await AppDatabase.currentDB.query(
 //       Users.TableName,
 //       where: '((firstName = ? And lastName = ?) OR (lastName = ? AND firstName = ?))',
 //       whereArgs: [
@@ -84,8 +84,8 @@
 
 
 //    static Future<List<ApMeUser>> fetchFriendLastUser(String friendId) async {
-//     var client = await AppDatabase().db;
-//     var res = await client.query(
+//     //var client = await AppDb.db;
+//     var res = await AppDatabase.currentDB.query(
 //       Users.TableName,
 //       where: '((firstName = ? And lastName = ?) OR (lastName = ? AND firstName = ?))',
 //       whereArgs: [
@@ -160,7 +160,7 @@
 //   }
 
 //   Future<ApMeUser> fetchLocal(int userId) async {
-//     var client = await AppDatabase().db;
+//     //var client = await AppDb.db;
 //     final Future<List<Map<String, dynamic>>> futureMaps = client.query(
 //       Users.TableName,
 //       where: 'userId = ?',
@@ -175,15 +175,15 @@
 //   }
 
 //   Future<int> insert() async {
-//     var client = await AppDatabase().db;
-//     int result = await client.insert(Users.TableName, toMapForDb(),
+//     //var client = await AppDb.db;
+//     int result = await AppDatabase.currentDB.insert(Users.TableName, toMapForDb(),
 //         conflictAlgorithm: ConflictAlgorithm.replace);
 //     print("Insert Result : " + result.toString());
 //     return result;
 //   }
 
 //   Future<int> update() async {
-//     var client = await AppDatabase().db;
+//     //var client = await AppDb.db;
 //     return client.update(Users.TableName, toMapForDb(),
 //         where: 'userId = ?',
 //         whereArgs: [userId],
@@ -191,13 +191,13 @@
 //   }
 
 //   Future<void> delete() async {
-//     var client = await AppDatabase().db;
+//     //var client = await AppDb.db;
 //     return client.delete(Users.TableName,
 //         where: 'userId = ?', whereArgs: [userId]);
 //   }
 
 //   Future closeDb() async {
-//     var client = await AppDatabase().db;
+//     //var client = await AppDb.db;
 //     client.close();
 //   }
 // }

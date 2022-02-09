@@ -1,39 +1,45 @@
+import 'package:ap_me/AppSettingsPage.dart';
 import 'package:ap_me/Friends.dart';
-import 'package:ap_me/ApMeUtils.dart';
 import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/ChatPage.dart';
 import 'package:ap_me/ApMeMessages.dart';
 import 'package:ap_me/FriendsPage.dart';
-import 'package:ap_me/PartnersPage.dart';
+import 'package:ap_me/ShortMessagesPage.dart';
 import 'package:ap_me/TempMessages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class MainPage extends StatefulWidget {
+class AdminPage extends StatefulWidget {
   @override
-  _MainPageState createState() => _MainPageState();
+  _AdminPageState createState() => _AdminPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _AdminPageState extends State<AdminPage> {
   List<ApMeMessage> messages = [];
   List<Friend> users = [];
+  List<Friend> friends = [];
   Color clrGetweb = Colors.brown;
+  final TextEditingController countController =
+      TextEditingController(text: "30");
+  final TextEditingController userController = TextEditingController(text: "r");
+  final TextEditingController filterController =
+      TextEditingController(text: "98");
   @override
   Widget build(BuildContext context) {
-    AppParameters.currentUser = "akbar";
+    // AppParameters.currentUser = "akbar";
     //AppParameters.currentFriend="sohail";
-    return Container(
-      alignment: Alignment.topCenter,
-      color: Colors.green[300],
+    return Scaffold(
+        body: SafeArea(
+            child: Container(
+      color: AppParameters.formsBackgroundColor,
       child: Column(
-        children: <Widget>[
-          SizedBox(
-            height: 20,
-          ),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(width: 20),
+              SizedBox(width: 10),
               // btnAddMessage("Add User"),
               //btnAddUser("Add User"),
               btnSendMessageUpdates("Send"),
@@ -43,39 +49,115 @@ class _MainPageState extends State<MainPage> {
               btnRefreshWeb("Get Web"),
 
               // btnSaveLocal("Save Local"),
+              SizedBox(width: 10),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(width: 10),
+              // btnAddMessage("Add User"),
+              //btnAddUser("Add User"),
+              // btnSaveLocal("Save Local"),
               // SizedBox(width: 20),
               btnClear("Clear"),
 
-              btnFriends("Friends"),
-              SizedBox(width: 20),
+              //  btnFriends("Friends"),
+              btnShortMessages("Mess"),
+              SizedBox(width: 10),
+              btnSettingsPage("Settings"),
+              SizedBox(width: 10),
+            ],
+          ),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                  flex: 40,
+                  child: TextField(
+                    style: TextStyle(
+                        color: AppParameters.sentDeliveredMessageForeColor,
+                        fontSize: AppParameters.messageFontSize),
+                    cursorColor: AppParameters.formsForegroundColor,
+                    textAlign: TextAlign.right,
+                    decoration: InputDecoration(
+                      hintText: 'پیام',
+                      contentPadding: EdgeInsets.all(5.5),
+                    ),
+                    maxLines: null,
+                    controller: userController,
+                    onChanged: (value) {
+                      AppParameters.smsUser = value;
+                    },
+                  )),
+              Expanded(
+                  flex: 30,
+                  child: TextField(
+                    style: TextStyle(
+                        color: AppParameters.sentDeliveredMessageForeColor,
+                        fontSize: AppParameters.messageFontSize),
+                    cursorColor: AppParameters.formsForegroundColor,
+                    textAlign: TextAlign.right,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'محدود',
+                      contentPadding: EdgeInsets.all(5.5),
+                    ),
+                    maxLines: null,
+                    controller: filterController,
+                    onChanged: (value) {
+                      AppParameters.smsFilter = value;
+                    },
+                  )),
+              Expanded(
+                  flex: 40,
+                  child: TextField(
+                    style: TextStyle(
+                        color: AppParameters.sentDeliveredMessageForeColor,
+                        fontSize: AppParameters.messageFontSize),
+                    cursorColor: AppParameters.formsForegroundColor,
+                    textAlign: TextAlign.right,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'تعداد',
+                      contentPadding: EdgeInsets.all(5.5),
+                    ),
+                    maxLines: null,
+                    controller: countController,
+                    onChanged: (value) {
+                      AppParameters.smsGetCount = int.parse(value);
+                    },
+                  )),
             ],
           ),
           _buildMessageList(messages),
+
           //_buildUsersList(users),
         ],
       ),
-    );
+    )));
   }
 
   Widget btnAddMessage(String text) {
-    return RaisedButton(
-      color: Colors.red,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.red),
       child: Text(text),
       onPressed: addMessage,
     );
   }
 
   Widget btnAddUser(String text) {
-    return RaisedButton(
-      color: Colors.red,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.red),
       child: Text(text),
       onPressed: addUser,
     );
   }
 
   Widget btnSendMessageUpdates(String text) {
-    return RaisedButton(
-      color: Colors.red,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.red),
       child: Text(text),
       onPressed: () {
         ApMeMessages.syncMessages();
@@ -84,24 +166,24 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget btnRefresh(String text) {
-    return RaisedButton(
-      color: Colors.red,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.red),
       child: Text(text),
       onPressed: setupList,
     );
   }
 
   Widget btnRefreshWeb(String text) {
-    return RaisedButton(
-      color: clrGetweb,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: clrGetweb),
       child: Text(text),
-      onPressed: getMessagesFromServer,
+      onPressed: getAllFromServer,
     );
   }
 
   Widget btnClear(String text) {
-    return RaisedButton(
-      color: Colors.blue,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.blue),
       child: Text(text),
       onPressed: () {
         ApMeMessages.clearAllLocalMessages();
@@ -112,11 +194,29 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget btnFriends(String text) {
-    return RaisedButton(
-      color: Colors.blue,
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.blue),
       child: Text(text),
       onPressed: _openFriendsPage,
     );
+  }
+
+  Widget btnShortMessages(String text) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(primary: Colors.blue),
+      child: Text(text),
+      onPressed: _openSMSPage,
+    );
+  }
+
+  Widget btnSettingsPage(String text) {
+    return ElevatedButton(
+        style: ElevatedButton.styleFrom(primary: Colors.blue),
+        child: Text(text),
+        onPressed: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => AppSettingsPage()));
+        });
   }
 
   void _openChatPage() {
@@ -129,12 +229,31 @@ class _MainPageState extends State<MainPage> {
         .push(MaterialPageRoute(builder: (context) => FriendsPage()));
   }
 
-  void getMessagesFromServer() async {
+  void _openSMSPage() {
+    if (AppParameters.canSeeLastSeen() && AppParameters.currentUser == "akbar")
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => ShortMessagesPage()));
+  }
+
+  Future<void> getFriendsListFromServer() async {
+    clrGetweb = Colors.grey;
+    setState(() {});
+    friends = await Friends.getWebFriendFriendsList();
+    clrGetweb = Colors.brown;
+    setState(() {});
+  }
+
+  Future<void> getMessagesFromServer() async {
     clrGetweb = Colors.grey;
     setState(() {});
     messages = await ApMeMessages.getWebNewMessages(true);
     clrGetweb = Colors.brown;
     setState(() {});
+  }
+
+  void getAllFromServer() async {
+    await getFriendsListFromServer();
+    await getMessagesFromServer();
   }
 
   void addMessage() async {
@@ -161,7 +280,8 @@ class _MainPageState extends State<MainPage> {
 
   void setupList() async {
     // var _messages = await Messages.fetchFriendMessages(AppParameters.currentUser,AppParameters.currentFriend);
-    var _messages = await ApMeMessages.getLocalMessages(10000);
+    var _messages =
+        await ApMeMessages.getLocalMessages(int.parse(countController.text));
     var _users = await Friends.getLocalFriendsList();
     print(_messages.length.toString() + " Messages Saved to Bank");
     print(_users.length.toString() + " Users Saved to Bank");
@@ -179,7 +299,7 @@ class _MainPageState extends State<MainPage> {
   TextStyle myStyle() {
     return TextStyle(
       fontSize: 12,
-      color: Colors.black,
+      color: AppParameters.formsForegroundColor,
     );
   }
 
@@ -215,8 +335,8 @@ class _MainPageState extends State<MainPage> {
               Expanded(
                 child: Column(
                   children: <Widget>[
-                    Text('Remark', style: myStyle()),
-                    Text(usersList[index].remark, style: myStyle()),
+                    Text('S:', style: myStyle()),
+                    Text(usersList[index].lastName, style: myStyle()),
                   ],
                 ),
               ),
@@ -327,6 +447,7 @@ class _MainPageState extends State<MainPage> {
             ],
           );
         },
+        reverse: false,
       ),
     );
   }

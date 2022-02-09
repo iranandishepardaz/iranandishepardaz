@@ -1,4 +1,4 @@
-import 'package:ap_me/ApMeMessages.dart';
+/*import 'package:ap_me/ApMeMessages.dart';
 import 'package:ap_me/ChatPage.dart';
 import 'package:ap_me/PersianDateUtil.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,21 +7,21 @@ import 'package:flutter/material.dart';
 import 'AppParameters.dart';
 import 'TempMessages.dart';
 
-class MessageBubble extends StatefulWidget {
+class MessageBubbleFull extends StatefulWidget {
   final ApMeMessage currentMessage;
   final GlobalKey keyToScroll;
   final ChatPageState parent;
   final int bubbleId;
   final VoidCallback function;
-  const MessageBubble(this.currentMessage, this.parent, this.keyToScroll,
+  const MessageBubbleFull(this.currentMessage, this.parent, this.keyToScroll,
       this.bubbleId, this.function)
       : super();
 
   @override
-  _MessageBubbleState createState() => _MessageBubbleState();
+  _MessageBubbleFullState createState() => _MessageBubbleFullState();
 }
 
-class _MessageBubbleState extends State<MessageBubble> {
+class _MessageBubbleFullState extends State<MessageBubbleFull> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -134,3 +134,4 @@ class _MessageBubbleState extends State<MessageBubble> {
     );
   }
 }
+*/

@@ -30,9 +30,9 @@ class TempMessages {
   }
 
   static Future<List<TempMessage>> getAllTempMessages() async {
-    var client = await AppDatabase().db;
-    var res = await client.query(TempMessages.TableName,
-        orderBy: "messageId desc, fromId ASC");
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB
+        .query(TempMessages.TableName, orderBy: "messageId desc, fromId ASC");
     if (res.isNotEmpty) {
       var messages =
           res.map((messageMap) => TempMessage.fromDb(messageMap)).toList();
@@ -42,15 +42,15 @@ class TempMessages {
   }
 
   static Future<List<TempMessage>> getLocalFriendMessages() async {
-    var client = await AppDatabase().db;
-    var res = await client.query(
+    //var client = await AppDb.db;
+    var res = await AppDatabase.currentDB.query(
       TempMessages.TableName,
       where: '((fromId = ? And toId = ?) OR (toId = ? AND fromId = ?))',
       whereArgs: [
         AppParameters.currentUser,
-        AppParameters.currentFriend,
+        AppParameters.currentFriendId,
         AppParameters.currentUser,
-        AppParameters.currentFriend,
+        AppParameters.currentFriendId,
       ],
       orderBy: 'sentAt ASC',
     );
@@ -68,7 +68,7 @@ class TempMessages {
       "103",
       AppParameters.currentUser,
       AppParameters.currentPassword,
-      AppParameters.currentFriend,
+      AppParameters.currentFriendId,
       textToSend
     ]);
     if (records[0][0] == "103" && records[0][1] == "0") {
@@ -80,8 +80,8 @@ class TempMessages {
   }
 
   static Future<void> clearAllTempMessages() async {
-    var client = await AppDatabase().db;
-    return client.delete(TempMessages.TableName);
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(TempMessages.TableName);
   }
 }
 
@@ -167,7 +167,7 @@ class TempMessage {
         deleted = map['deleted'],
         uploaded = map['uploaded'];
 
- TempMessage.fromApMeMessage(ApMeMessage apMeMessage) {
+  TempMessage.fromApMeMessage(ApMeMessage apMeMessage) {
     messageId = apMeMessage.messageId;
     fromId = apMeMessage.fromId;
     toId = apMeMessage.toId;
@@ -177,14 +177,14 @@ class TempMessage {
     seenAt = apMeMessage.seenAt;
     messageType = apMeMessage.messageType;
     url = apMeMessage.url;
-    deleted =apMeMessage.deleted;
+    deleted = apMeMessage.deleted;
     uploaded = apMeMessage.uploaded;
   }
 
-
   Future<TempMessage> fetch(int messageId, String fromId) async {
-    var client = await AppDatabase().db;
-    final Future<List<Map<String, dynamic>>> futureMaps = client.query(
+    //var client = await AppDb.db;
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
       TempMessages.TableName,
       where: 'messageId = ? And fromId = ?',
       whereArgs: [messageId, fromId],
@@ -200,30 +200,33 @@ class TempMessage {
 
   Future<int> insert() async {
     messageId = await lastId() + 1;
-    var client = await AppDatabase().db;
-    int result = await client.insert(TempMessages.TableName, toMapForDb(),
+    //var client = await AppDb.db;
+    int result = await AppDatabase.currentDB.insert(
+        TempMessages.TableName, toMapForDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print("Insert Result : " + result.toString());
+    print("Temp Message Insert Result: " + result.toString());
     return result;
   }
 
   Future<int> update() async {
-    var client = await AppDatabase().db;
-    return client.update(TempMessages.TableName, toMapForDb(),
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.update(
+        TempMessages.TableName, toMapForDb(),
         where: 'messageId = ? And fromId = ?',
         whereArgs: [messageId, fromId],
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> delete() async {
-    var client = await AppDatabase().db;
-    return client.delete(TempMessages.TableName,
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(TempMessages.TableName,
         where: 'messageId = ? And fromId = ?', whereArgs: [messageId, fromId]);
   }
 
   Future<int> lastId() async {
-    var client = await AppDatabase().db;
-    final Future<List<Map<String, dynamic>>> futureMaps = client.query(
+    //var client = await AppDb.db;
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
       TempMessages.TableName,
       limit: 1,
       orderBy: 'messageId DESC',
@@ -245,10 +248,9 @@ class TempMessage {
     ]);
     if (records[0][0] == "103" && records[0][1] == "0") {
       //messageToSend.sentAt =( DateTime.now().millisecondsSinceEpoch~/1000);
-        delete();
-        return true;
-    } 
+      delete();
+      return true;
+    }
     return false;
   }
-
 }
