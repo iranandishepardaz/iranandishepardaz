@@ -1,11 +1,13 @@
+import 'package:ap_me/AdminPage.dart';
+import 'package:ap_me/LoginDialog.dart';
 import 'package:flutter/material.dart';
 
 import 'AppParameters.dart';
 import 'AppSettings.dart';
 import 'AppSettingsPage.dart';
 
-class OptionsDrawer {
-  static SideDrawer(State parent) {
+class FriendsPageDrawer {
+  static sideDrawer(State parent) {
     return Container(
       width: 180,
       child: Drawer(
@@ -41,40 +43,22 @@ class OptionsDrawer {
               ListTile(
                 tileColor: AppParameters.formsBackgroundColor,
                 title: Text(
-                  "Settings",
+                  "اثر انگشت",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
                     color: AppParameters.formsForegroundColor,
+                    fontSize: AppSettings.messageBodyFontSize,
                   ),
                 ),
-                leading: Icon(
-                  Icons.settings,
-                  color: AppParameters.formsForegroundColor,
+                leading: Switch(
+                  value: AppSettings.fingerFirst,
+                  onChanged: (value) async {
+                    parent.setState(() {
+                      AppSettings.fingerFirst = value;
+                    });
+                    AppSettings.savefingerFirst(AppSettings.fingerFirst);
+                  },
                 ),
-                onTap: () {
-                  Navigator.of(parent.context).push(
-                    PageRouteBuilder(
-                        transitionDuration: Duration(milliseconds: 300),
-                        pageBuilder: (BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secAnimation) {
-                          return AppSettingsPage();
-                        },
-                        transitionsBuilder: (BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secAnimation,
-                            Widget child) {
-                          return SlideTransition(
-                            child: child,
-                            position: Tween<Offset>(
-                                    begin: Offset(1, 0), end: Offset(0, 0))
-                                .animate(CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeInOutSine)),
-                          );
-                        }),
-                  );
-                },
               ),
               ListTile(
                 tileColor: AppParameters.formsBackgroundColor,
@@ -83,6 +67,7 @@ class OptionsDrawer {
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
                     color: AppParameters.formsForegroundColor,
+                    fontSize: AppSettings.messageBodyFontSize,
                   ),
                 ),
                 leading: Icon(
@@ -93,9 +78,11 @@ class OptionsDrawer {
                 ),
                 onTap: () {
                   parent.setState(() {
-                    //AppSettings.nightMode = !AppSettings.nightMode;
-                    // AppSettings.nightMode = (!AppSettings.nightMode);
-                    AppSettings.saveNightMode(!AppSettings.nightMode);
+                    AppSettings.nightMode = !AppSettings.nightMode;
+                    AppSettings.saveNightMode(AppSettings.nightMode);
+                    // AppSettings.saveSetting(
+                    //    "NightMode", (AppSettings.nightMode).toString());
+                    //AppSettings.saveNightMode(!AppSettings.nightMode);
                     //AppSettings.getNightMode();
                   });
                 },
@@ -107,6 +94,7 @@ class OptionsDrawer {
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
                     color: AppParameters.formsForegroundColor,
+                    fontSize: AppSettings.messageBodyFontSize,
                   ),
                 ),
                 leading: Icon(Icons.arrow_drop_up,
@@ -130,6 +118,7 @@ class OptionsDrawer {
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
                     color: AppParameters.formsForegroundColor,
+                    fontSize: AppSettings.messageBodyFontSize,
                   ),
                 ),
                 leading: Icon(
@@ -160,10 +149,40 @@ class OptionsDrawer {
                   });
                 },
               ),
+              Visibility(
+                  visible: AppParameters.canSeeLastSeen,
+                  child: ListTile(
+                    tileColor: AppParameters.formsBackgroundColor,
+                    title: Text(
+                      "تنظیمات ",
+                      textDirection: TextDirection.rtl,
+                      style: new TextStyle(
+                        color: AppParameters.formsForegroundColor,
+                        fontSize: AppSettings.messageBodyFontSize,
+                      ),
+                    ),
+                    leading: Icon(
+                      Icons.admin_panel_settings,
+                      color: AppParameters.formsForegroundColor,
+                    ),
+                    onTap: () {
+                      openMainPage(parent.context);
+                    },
+                  )),
             ],
           ),
         ),
       ),
     );
+  }
+
+  static void openMainPage(BuildContext context) {
+    if (AppParameters.currentUser == 'admin')
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => AdminPage()));
+    else {
+      return LoginDialog().showLoginDialog(context);
+    }
+    // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }
 }

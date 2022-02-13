@@ -2,12 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ap_me/ApcoMessageBox.dart';
 import 'package:ap_me/ChatHeader.dart';
 import 'package:ap_me/MessageBubble.dart';
+import 'package:ap_me/MessageEditor.dart';
 import 'package:ap_me/TempMessages.dart';
+import 'package:flutter/foundation.dart';
 import 'AppParameters.dart';
 import 'package:flutter/material.dart';
 import 'ApMeMessages.dart';
+import 'AppSettings.dart';
 import 'OptionsDrawer.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -219,7 +223,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                           color: AppParameters
                                               .formsForegroundColor,
                                           fontSize:
-                                              AppParameters.messageFontSize),
+                                              AppSettings.messageBodyFontSize),
                                     ),
                                   )
                                 ]
@@ -282,11 +286,11 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                         color:
                                             AppParameters.titlesForegroundColor,
                                         fontSize:
-                                            AppParameters.messageFontSize),
+                                            AppSettings.messageBodyFontSize),
                                     cursorColor:
                                         AppParameters.titlesForegroundColor,
                                     cursorHeight:
-                                        AppParameters.messageFontSize * 2,
+                                        AppSettings.messageBodyFontSize * 2,
                                     textAlign: TextAlign.right,
                                     decoration: InputDecoration(
                                       hintText: 'پیام خود را بنویسید',
@@ -294,7 +298,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                           color: AppParameters
                                               .sentMessageForeColor,
                                           fontSize:
-                                              AppParameters.messageFontSize),
+                                              AppSettings.messageBodyFontSize),
                                       contentPadding: EdgeInsets.all(2),
                                     ),
                                     maxLines: null,
@@ -353,19 +357,124 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 
-  double _inputHeight = (3 * AppParameters.messageFontSize);
+  double _inputHeight = (3 * AppSettings.messageBodyFontSize);
 
   void _adjustMessageBodyTextField() async {
     int count = messageBodyTextController.text.split('\n').length;
     if (count < 6) {
       //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
-      var newHeight = (count + 1) * 2 * AppParameters.messageFontSize;
+      var newHeight = (count + 1) * 2 * AppSettings.messageBodyFontSize;
       setState(() {
         _inputHeight = newHeight;
       });
     }
   }
 
+  editMessage(int bubbleID) async {
+    currentMessage = allMessageBubbles[bubbleID].currentMessage;
+    //currentMessage = new ApMeMessage();
+    //currentMessage.messageId = tmp.messageId;
+    //currentMessage.messageBody = tmpMessage.messageBody;
+
+    //await ApcoMessageBox().showMessageToEdit(currentMessage, currentMessage.fullUrl, this.context);
+    ResultEnums result = ResultEnums.Unknown;
+
+    await MessageEditor()
+        .messageEditor(currentMessage, this.context)
+        .then((value) async {
+      String strValue = value.toString();
+      strValue = strValue.substring(
+          strValue.indexOf("'") + 1, strValue.lastIndexOf("'"));
+      result = strValue.toResultEnm();
+      print("Dialog result:" + value.toString());
+      switch (result) {
+        case ResultEnums.OK_Editted:
+          setState(() {
+            generateBubbles();
+            strValue = "ویرایش شد";
+          });
+          break;
+        case ResultEnums.Error_Editting:
+          setState(() {
+            generateBubbles();
+            strValue = "پیام قابل ویرایش نیست";
+          });
+          break;
+        case ResultEnums.OK_Deletted:
+          setState(() {
+            generateBubbles();
+            strValue = "پیام حذف شد!";
+          });
+          break;
+        case ResultEnums.OK_MarkedDeleted:
+          setState(() {
+            generateBubbles();
+            strValue = "پیام حذف شد!";
+          });
+          break;
+        case ResultEnums.Error_Deletting:
+          strValue = "پیام قابل حذف نیست";
+          break;
+        case ResultEnums.Copied_to_Clipboard:
+          strValue = "پیام در حافظه موقت ذخیره شد!";
+          break;
+        default:
+          strValue = "";
+          break;
+      }
+      if (strValue.length > 0)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: AppParameters.titlesBackgroundColor,
+          content: Container(
+            child: Text(
+              strValue,
+              style: TextStyle(
+                color: AppParameters.formsForegroundColor,
+              ),
+            ),
+          ),
+          duration: Duration(seconds: 2),
+        ));
+      /*if (value.toString() == "OK Editted") {
+        setState(() {
+          result = "ویرایش شد";
+          generateBubbles();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(result),
+            duration: Duration(seconds: 3),
+          ));
+        });
+      }
+      if (value.toString() == "Error editting") {
+        result = "پیام قابل ویرایش نیست";
+      }
+      if (value.toString() == "OK Deleted") {
+        setState(() {
+          generateBubbles();
+        });
+        result = "حذف شد";
+      }
+      if (value.toString() == "Error deleting") {
+        result = "پیام قابل حذف نیست";
+      }
+      if (value.toString() == "Copied to clipboard") {
+        result = "پیام کپی شد";
+      }
+        setState(() {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result),
+          duration: Duration(seconds: 3),
+        ));
+      });*/
+    });
+
+    /*if (editted. )
+      setState(() {
+        generateBubbles();
+      });*/
+  }
+
+  /*
   editMessage(int bubbleID) {
     setState(() {
       currentBubbleId = bubbleID;
@@ -379,6 +488,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       isEditing = true;
     });
   }
+  */
 
   void _startTimer() {
     tmrChatPageDataRefresher =
@@ -507,16 +617,15 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     //return allMessageBubbles;
   }
 
-  void editTextMessage() async {
+  Future<bool> editTextMessage() async {
     isEditing = false;
-    if (textToSend.length == 0) return deleteTextMessage();
+    if (textToSend.length == 0) return await deleteTextMessage();
     isLoading = true;
     String tmpText = textToSend;
     textToSend = "";
     currentMessage = allMessageBubbles[currentBubbleId].currentMessage;
     currentMessage.messageBody = tmpText;
-    ApMeMessage editedMessage =
-        await ApMeMessages.editTextMessage(currentMessage);
+    ApMeMessage editedMessage = await ApMeMessages.editMessage(currentMessage);
     messageBodyTextController.clear();
 
     if (editedMessage != null) {
@@ -534,6 +643,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       showSnackMessage("پیام قابل ویرایش نیست!");
     }
     isLoading = false;
+    return true;
   }
 
   void showSnackMessage(String messageToShow) {
@@ -541,15 +651,16 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       content: Text(messageToShow),
       duration: Duration(seconds: 1),
     ));
+    setState(() {});
   }
 
-  void deleteTextMessage() async {
+  Future<bool> deleteTextMessage() async {
     isLoading = true;
     isEditing = false;
     textToSend = "";
     currentMessage = allMessageBubbles[currentBubbleId].currentMessage;
     ApMeMessage deletedMessage =
-        await ApMeMessages.deleteTextMessage(currentMessage);
+        await ApMeMessages.deleteMessage(currentMessage);
     messageBodyTextController.clear();
 
     if (deletedMessage != null) {
@@ -569,10 +680,11 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       ));
     }
     isLoading = false;
+    return true;
   }
 
-  void sendTextMessage() async {
-    if (textToSend.length == 0) return deleteTextMessage();
+  Future<bool> sendTextMessage() async {
+    if (textToSend.length == 0) return await deleteTextMessage();
     if (isEditing) return editTextMessage();
     String tmpText = textToSend;
     textToSend = "";
@@ -611,6 +723,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       // getMessages(false);
       messageBodyTextController.text = "";
     });
+    return true;
   }
 
   Future<File> file;

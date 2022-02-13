@@ -40,7 +40,7 @@ class _MessageBubbleFullState extends State<MessageBubbleFull> {
                     .getSentAtTime()) // + PersianDateUtil.MItoSH(widget.currentMessage.getSentAtTime())
                 : "Does not sent!",
             style: TextStyle(
-                fontSize: AppParameters.messageDateFontSize,
+                fontSize: AppSettings.messageDateFontSize,
                 color: AppParameters.formsForegroundColor),
           ),
           Visibility(
@@ -92,9 +92,9 @@ class _MessageBubbleFullState extends State<MessageBubbleFull> {
                     child: Text(
                       widget.currentMessage.messageBody,
                       style: TextStyle(
-                          fontSize: AppParameters.messageFontSize,
+                          fontSize: AppSettings.messageBodyFontSize,
                           color: widget.currentMessage.deliveredAt > 0 ||
-                                  (!AppParameters.canSeeLastSeen())
+                                  (!AppParameters.canSeeLastSeen)
                               ? AppParameters.sentDeliveredMessageForeColor
                               : AppParameters.sentMessageForeColor),
                     ),

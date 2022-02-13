@@ -2,6 +2,7 @@ import 'package:ap_me/AppDatabase.dart';
 import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/AppSettings.dart';
 import 'package:ap_me/LoginPage.dart';
+import 'package:ap_me/tempPage.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,12 +26,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void initAndGo() async {
     await AppDatabase.initDatabase();
-    await AppParameters.initialize();
-    await AppSettings.readNightMode();
+    //await AppParameters.initialize();
+    await AppSettings.readCurrentSetings();
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => LoginPage()));
-    //Navigator.pushReplacement(
-    //    context, MaterialPageRoute(builder: (context) => AuthenticatePage()));
+    // context, MaterialPageRoute(builder: (context) => TempPage()));
   }
 
   @override

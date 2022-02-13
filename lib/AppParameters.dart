@@ -1,6 +1,39 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'AppSettings.dart';
+
+enum ResultEnums {
+  OK_Editted,
+  //OK_MarkedEdited,
+  Error_Editting,
+  OK_Deletted,
+  OK_MarkedDeleted,
+  Error_Deletting,
+  Cancelled,
+  Copied_to_Clipboard,
+  Unknown
+}
+ResultEnums valueOf(String value) {
+  return ResultEnums.values.where((e) => describeEnum(e) == value).first;
+}
+
+extension EnumEx on String {
+  ResultEnums toResultEnum() {
+    String tolow = toLowerCase();
+
+    ResultEnums out = ResultEnums.values.firstWhere(
+        (d) => d.toString().toLowerCase() == tolow
+        // d.toString().toLowerCase().substring(d.toString().indexOf(".")) ==         toLowerCase()
+        );
+    return out;
+  }
+}
+
+extension Enummer on String {
+  ResultEnums toResultEnm() => ResultEnums.values
+      .firstWhere((d) => d.toString().toLowerCase() == toLowerCase());
+}
 
 class AppParameters {
   static double iconsSize = 30;
@@ -12,8 +45,8 @@ class AppParameters {
   static String currentPassword = "";
   static String currentFriendId = "";
   static String currentFriendName = "";
-  static String lastLoggedUser = "";
-  static String lastLoggedPassword = "";
+  // static String lastLoggedUser = "";
+  // static String lastLoggedPassword = "";
 
   static String firstName = "";
   static String lastName = "";
@@ -25,12 +58,6 @@ class AppParameters {
   //static String mainSiteURL = "http://apme.apcoware.ir/";
 
   //static String mainSiteURL = "http://akbarapco-001-site1.itempurl.com/";
-  static bool canSeeLastSeen() {
-    return AppParameters.currentUser == "akbar" ||
-        AppParameters.currentUser == "sohail" ||
-        AppParameters.currentUser == "sepehr" ||
-        AppParameters.currentUser == "mahnaz";
-  }
 
   static String currentFriendAvatarUrl() {
     return userAvatarUrl(currentFriendId);
@@ -116,23 +143,29 @@ class AppParameters {
   static get sentMessageBackColor =>
       AppSettings.nightMode ? _sentMessageBackClrNight : _sentMessageBackClr;
 
-  // static Color receivedMessageBackColor = Color.fromARGB(200, 20, 160, 160);
+  static get canSeeLastSeen =>
+      AppParameters.currentUser == "akbar" ||
+      AppParameters.currentUser == "sohail" ||
+      // AppParameters.currentUser == "mahnaz" ||
+      AppParameters.currentUser == "sepehr";
+
+// static Color receivedMessageBackColor = Color.fromARGB(200, 20, 160, 160);
   static Color receivedMessageForeColor = Color.fromARGB(200, 200, 200, 200);
   // static Color sentMessageBackColor = Color.fromARGB(200, 20, 80, 80);
   static Color sentMessageForeColor = Color.fromARGB(200, 200, 200, 200);
   static Color sentDeliveredMessageForeColor =
       Color.fromARGB(255, 255, 255, 255);
   static Color messageDateColor = Colors.brown[900];
-  static double messageFontSize = 13;
+  //static double messageFontSize = 13;
 
-  static double messageDateFontSize = 11;
+  //static double messageDateFontSize = 11;
 
   static int messageBufferSize = 100;
 
   static Future initialize() async {
     /* messageFontSize = AppSettings.messageFontSize;*/
-    messageFontSize = await AppSettings.getMessageFontSize();
-    messageDateFontSize = await AppSettings.getMessageDateFontSize();
+    //  messageFontSize = await AppSettings.getMessageFontSize();
+    //messageDateFontSize = await AppSettings.getMessageDateFontSize();
 
 /*    AppSetting mFontS = await AppSettings.getSetting("messageFontSize");
     try {
@@ -146,23 +179,23 @@ class AppParameters {
     } catch (e) {
       messageFontSize = 9;
     }
+
+    lastLoggedUser = await AppSettings.getSettingValue("lastLoggedUser");
+    currentUser = lastLoggedUser;
+
+    lastLoggedPassword =
+        await AppSettings.getSettingValue("lastLoggedPassword");
+    currentPassword = lastLoggedPassword;
+  }
 */
-    AppSetting lastLoggedUsr = await AppSettings.getSetting("lastLoggedUser");
+    /* static Future<String> getlastLoggedUser() async {
+    AppSetting tmpSetting = await AppSettings.getSetting("lastLoggedUser");
     try {
-      lastLoggedUser = lastLoggedUsr.settingValue;
+      lastLoggedUser = tmpSetting.settingValue;
     } catch (e) {
       lastLoggedUser = "?";
     }
-    currentUser = lastLoggedUser;
-
-    AppSetting lastLoggedPass =
-        await AppSettings.getSetting("lastLoggedPassword");
-    try {
-      lastLoggedPassword = lastLoggedPass.settingValue;
-    } catch (e) {
-      lastLoggedPassword = "";
-    }
-    currentPassword = lastLoggedPassword;
+    return lastLoggedUser;
   }
 
   static Future<String> getlastLoggedPassword() async {
@@ -174,5 +207,6 @@ class AppParameters {
       lastLoggedPassword = "";
     }
     return lastLoggedPassword;
+  }*/
   }
 }

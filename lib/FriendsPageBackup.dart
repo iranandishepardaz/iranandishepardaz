@@ -196,14 +196,14 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                                   ? _model.datetime + "\n" + _model.lastSeen
                                   : _model.datetime,
                               style: TextStyle(
-                                  fontSize: AppParameters.messageDateFontSize),
+                                  fontSize: AppSettings.messageDateFontSize),
                             ),
                           ],
                         ),
                         subtitle: Text(
                           _model.message,
                           style: TextStyle(
-                              fontSize: AppParameters.messageFontSize),
+                              fontSize: AppSettings.messageBodyFontSize),
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -271,11 +271,11 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                       leading: Icon(Icons.plus_one),
                       onTap: () {
                         setState(() {
-                          AppParameters.messageFontSize++;
+                          AppSettings.messageBodyFontSize++;
                           AppSetting(
                                   settingName: "messageFontSize",
                                   settingValue:
-                                      AppParameters.messageFontSize.toString())
+                                      AppSettings.messageBodyFontSize.toString())
                               .insert();
                         });
                       },
@@ -288,11 +288,11 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                       leading: Icon(Icons.exposure_minus_1),
                       onTap: () {
                         setState(() {
-                          AppParameters.messageFontSize--;
+                          AppSettings.messageBodyFontSize--;
                           AppSetting(
                                   settingName: "messageFontSize",
                                   settingValue:
-                                      AppParameters.messageFontSize.toString())
+                                      AppSettings.messageBodyFontSize.toString())
                               .insert();
                         });
                       },

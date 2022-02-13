@@ -1,10 +1,12 @@
 import 'package:ap_me/ApMeMessages.dart';
+import 'package:ap_me/ApcoMessageBox.dart';
 import 'package:ap_me/ChatPage.dart';
 import 'package:ap_me/PersianDateUtil.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'AppParameters.dart';
+import 'AppSettings.dart';
 import 'TempMessages.dart';
 
 class MessageBubble extends StatefulWidget {
@@ -40,18 +42,13 @@ class _MessageBubbleState extends State<MessageBubble> {
                     .getSentAtTime()) // + PersianDateUtil.MItoSH(widget.currentMessage.getSentAtTime())
                 : "Does not sent!",
             style: TextStyle(
-                fontSize: AppParameters.messageDateFontSize,
+                fontSize: AppSettings.messageDateFontSize,
                 color: AppParameters.formsForegroundColor),
           ),
           Visibility(
             visible: widget.currentMessage.messageType == 1,
             child: Container(
-              child: Image(
-                  image: NetworkImage(AppParameters.mainSiteURL +
-                      "/images/" +
-                      widget.currentMessage.fromId +
-                      "/" +
-                      widget.currentMessage.url)),
+              child: Image(image: NetworkImage(widget.currentMessage.fullUrl)),
               width: 200,
               height: 200,
             ),
@@ -68,33 +65,46 @@ class _MessageBubbleState extends State<MessageBubble> {
                         bottomLeft: Radius.circular(15.0),
                         bottomRight: Radius.circular(15.0)),
             elevation: widget.currentMessage.deliveredAt > 0 ? 12.0 : 0.0,
-            color: widget.currentMessage.fromId == AppParameters.currentUser
-                ? (widget.currentMessage.uploaded > 0
-                    ? AppParameters.sentMessageBackColor
-                    : Colors.red)
-                : AppParameters.receivedMessageBackColor,
+            color: widget.currentMessage.deleted > 0
+                ? Colors.grey
+                : widget.currentMessage.fromId == AppParameters.currentUser
+                    ? (widget.currentMessage.uploaded > 0
+                        ? AppParameters.sentMessageBackColor
+                        : Colors.red)
+                    : AppParameters.receivedMessageBackColor,
             child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
                 child: GestureDetector(
                   onTap: () {
-                    debugPrint(
-                        'onPress on bubble No: ' + widget.bubbleId.toString());
+                    if (widget.currentMessage.deleted == 0 &&
+                        widget.currentMessage.fromId ==
+                            AppParameters.currentUser)
+                      widget.parent.editMessage(widget.bubbleId);
                   },
                   // Start List multi-select mode on long press
                   onLongPress: () {
-                    widget.currentMessage.isEditting = true;
-                    debugPrint('onLongPress ' +
-                        widget.currentMessage.messageId.toString());
-                    widget.parent.editMessage(widget.bubbleId);
+                    /* ApcoMessageBox().showMessageToEdit(widget.currentMessage,
+                        widget.currentMessage.fullUrl, this.context);
+                    */
+                    //widget.currentMessage.isEditting = true;
+                    // debugPrint('onLongPress ' +
+                    //     widget.currentMessage.messageId.toString());
+                    if (AppParameters.currentUser == "akbar")
+                      widget.parent.editMessage(widget.bubbleId);
+                    //  setState(() {});
                   },
                   child: Directionality(
                     textDirection: TextDirection.rtl,
                     child: Text(
-                      widget.currentMessage.messageBody,
+                      widget.currentMessage.deleted > 0
+                          ? "پیام حذف شده"
+                          : widget.currentMessage.messageBody.length > 0
+                              ? widget.currentMessage.messageBody
+                              : "پیام حذف شده",
                       style: TextStyle(
-                          fontSize: AppParameters.messageFontSize,
+                          fontSize: AppSettings.messageBodyFontSize,
                           color: widget.currentMessage.deliveredAt > 0 ||
-                                  (!AppParameters.canSeeLastSeen())
+                                  (!AppParameters.canSeeLastSeen)
                               ? AppParameters.sentDeliveredMessageForeColor
                               : AppParameters.sentMessageForeColor),
                     ),

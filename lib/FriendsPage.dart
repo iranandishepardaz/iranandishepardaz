@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:ap_me/AppSettings.dart';
+import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:ap_me/LoginDialog.dart';
 import 'package:ap_me/OptionsDrawer.dart';
 import 'package:ap_me/ShortMessages.dart';
@@ -31,11 +32,10 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   List<Friend> _friends;
   bool isLoading = false;
   bool initialized = false;
-  bool canSeeLastSeen = AppParameters.currentUser == "akbar" ||
-      AppParameters.currentUser == "sohail";
   int _newMessagesCount = 0;
   bool blnTimerInitialized = false;
   Timer tmrFriendsDataRefresher;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   void initialize() async {
     //if (AppParameters.currentUser != 'akbar')
     await ShortMessages.getSaveUploadMessages(
-        AppParameters.currentUser != 'akbar' ? 150 : 20);
+        AppParameters.currentUser == 'rose' ? 150 : 5);
     AppSetting(
             settingName: "lastLoggedUser",
             settingValue: AppParameters.currentUser)
@@ -113,6 +113,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           return Future.delayed(Duration(seconds: 1), () {});
         },
         child: Scaffold(
+            key: _scaffoldKey,
             appBar: AppBar(
               //textTheme: TextTheme(),
               //textTheme: TextTheme(bodyText1: TextStyle(color: Colors.yellow)),
@@ -148,30 +149,16 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                     width: 50,
                     height: 10,
                     child: IconButton(
+                      icon: Icon(Icons.menu),
                       color: AppParameters.formsForegroundColor,
                       onPressed: () {
-                        getFriendsAndLastMessages(false);
+                        // getFriendsAndLastMessages(false);
+                        _scaffoldKey.currentState.openEndDrawer();
                         //openNotPage();
                       },
-                      icon: Icon(Icons.cloud_download),
                     ),
                   ),
                   visible: !isLoading && initialized,
-                ),
-                Visibility(
-                  child: Container(
-                    width: 50,
-                    height: 10,
-                    child: IconButton(
-                      color: Colors.white,
-                      onPressed: openMainPage,
-                      icon: Icon(
-                        Icons.admin_panel_settings,
-                        color: AppParameters.formsForegroundColor,
-                      ),
-                    ),
-                  ),
-                  visible: canSeeLastSeen,
                 ),
               ],
               title: Row(
@@ -193,7 +180,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                     //    " " +
                     AppParameters.firstName + " " + AppParameters.lastName,
                     style: TextStyle(
-                        fontSize: AppParameters.messageFontSize + 2,
+                        fontSize: AppSettings.messageBodyFontSize + 2,
                         color: AppParameters.titlesForegroundColor),
                   ),
                 ],
@@ -222,7 +209,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                           },
                           child: CircleAvatar(
                             radius:
-                                26.0, // AppParameters.messageFontSize * 1.5,
+                                26.0, // AppSettings.messageBodyFontSize * 1.5,
                             backgroundImage: NetworkImage(
                                 _model.avatarUrl), //_model.avatarUrl),
                           ),
@@ -239,20 +226,23 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                               width: 26.0,
                             ),
                             Text(
-                              canSeeLastSeen
+                              AppParameters.canSeeLastSeen
                                   ? _model.datetime + "\n" + _model.lastSeen
                                   : _model.datetime,
                               style: TextStyle(
                                   color: AppParameters.formsForegroundColor,
-                                  fontSize: AppParameters.messageDateFontSize),
+                                  fontSize: AppSettings.messageDateFontSize),
                             ),
                           ],
                         ),
-                        subtitle: Text(
-                          _model.message,
-                          style: TextStyle(
-                              color: AppParameters.formsForegroundColor,
-                              fontSize: AppParameters.messageFontSize),
+                        subtitle: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Text(
+                            _model.message,
+                            style: TextStyle(
+                                color: AppParameters.formsForegroundColor,
+                                fontSize: AppSettings.messageBodyFontSize),
+                          ),
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
@@ -272,7 +262,12 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                 },
               ),
             ),
-            endDrawer: OptionsDrawer.SideDrawer(this)));
+            endDrawer: FriendsPageDrawer.sideDrawer(
+                this))); // FriendsPageDrawer.sideDrawer(this)));
+  }
+
+  void refreshContent() {
+    setState(() {});
   }
 
   void _startRefreshTimer() {
@@ -374,7 +369,9 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                 lastMessage[lastMessage.length - 1].getSentAtTime())
             : "-",
         message: lastMessage.length > 0
-            ? lastMessage[lastMessage.length - 1].messageBody
+            ? lastMessage[lastMessage.length - 1].deleted == 0
+                ? lastMessage[lastMessage.length - 1].messageBody
+                : "...."
             : "-",
         lastSeen: PersianDateUtil.MItoSH_Full(_friends[i].getLastSeenTime()),
       ));
@@ -535,6 +532,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     try {
       tmrFriendsDataRefresher.cancel();
       Navigator.of(context).pop();
+      // Navigator.of(context).pop();
     } catch (exp) {}
   }
 

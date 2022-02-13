@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'AdminPage.dart';
 import 'AppParameters.dart';
+import 'AppSettings.dart';
 
 class LoginDialog {
   showNetworkImage(String address, BuildContext context) {
@@ -103,11 +104,7 @@ class LoginDialog {
                                           builder: (context) => AdminPage()));
                                   Navigator.of(context).pop();
                                 } else {
-                                  setState(() {
-                                    txtformMessageController.text =
-                                        "دوباره تلاش کنید";
-                                    // txtUserNameController.text = "?";
-                                  });
+                                  Navigator.of(context).pop();
                                 }
                               },
                               child: Container(
@@ -135,7 +132,7 @@ class LoginDialog {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppParameters.titlesForegroundColor,
-                                  fontSize: AppParameters.messageFontSize,
+                                  fontSize: AppSettings.messageBodyFontSize,
                                 )),
                           ]),
                     ],

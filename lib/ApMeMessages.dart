@@ -325,7 +325,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> editTextMessage(ApMeMessage messageToEdit) async {
+  static Future<ApMeMessage> editMessage(ApMeMessage messageToEdit) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "108",
       AppParameters.currentUser,
@@ -343,8 +343,26 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> deleteTextMessage(
-      ApMeMessage messageToDelete) async {
+  static Future<ApMeMessage> editDeliveredMessage(
+      ApMeMessage messageToEdit) async {
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "208",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      messageToEdit.messageId.toString(),
+      messageToEdit.messageBody
+    ]);
+    if (records.length == 0) {
+      return null; //this means edit Message was not successful
+    }
+    if (records[0][0] == "208" && records[0][1] == "0") {
+      return messageToEdit;
+    } else {
+      return null; //this means edit Message was not successful
+    }
+  }
+
+  static Future<ApMeMessage> deleteMessage(ApMeMessage messageToDelete) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "109",
       AppParameters.currentUser,
@@ -355,7 +373,33 @@ class ApMeMessages {
     if (records.length == 0) {
       return null; //this means edit Message was not successful
     }
-    if (records[0][0] == "109" && records[0][1] == "0") {
+    if (records[0][0] == "109" &&
+        records[0][1] == "0" &&
+        records[0][2] == "0") {
+      return messageToDelete;
+    } else if (records[0][0] == "109" &&
+        records[0][1] == "0" &&
+        records[0][2] == "1") {
+      messageToDelete.deleted = 1;
+      return messageToDelete;
+    } else {
+      return null; //this means edit Message was not successful
+    }
+  }
+
+  static Future<ApMeMessage> deleteDeliveredMessage(
+      ApMeMessage messageToDelete) async {
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "209",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      messageToDelete.messageId.toString(),
+      messageToDelete.messageBody
+    ]);
+    if (records.length == 0) {
+      return null; //this means edit Message was not successful
+    }
+    if (records[0][0] == "209" && records[0][1] == "0") {
       return messageToDelete;
     } else {
       return null; //this means edit Message was not successful
@@ -455,6 +499,10 @@ class ApMeMessage {
       _sentAtTime = DateTime.fromMillisecondsSinceEpoch(sentAt * 1000);
     return _sentAtTime;
   }
+
+  get fullUrl => messageType == 1
+      ? AppParameters.mainSiteURL + "/images/" + fromId + "/" + url
+      : "";
 
   ApMeMessage.fromWebRecord(List<String> record) {
     messageId = int.parse(record[0]);

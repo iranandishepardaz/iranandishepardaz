@@ -65,7 +65,6 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _authenticate() async {
     bool authenticated = false;
-
     try {
       authenticated = await auth.authenticateWithBiometrics(
           localizedReason: "حسگر را لمس کنید",
@@ -79,15 +78,15 @@ class _LoginPageState extends State<LoginPage> {
 
     print(_autherized);
     if (authenticated) {
-      txtUserNameController.text = AppParameters.lastLoggedUser;
-      txtPasswordController.text = await AppParameters.getlastLoggedPassword();
+      txtUserNameController.text = await AppSettings.readLastLoggedUser();
+      txtPasswordController.text = await AppSettings.readLastLoggedPassword();
       doLogin();
     }
   }
 
   @override
   void initState() {
-    txtUserNameController.text = AppParameters.lastLoggedUser;
+    txtUserNameController.text = AppSettings.lastLoggedUser;
     _checkBiometrics();
     _getAvailableBiometric();
     _getVer();
@@ -98,6 +97,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     var isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    //if (AppSettings.fingerFirst) _authenticate();
     return Scaffold(
       backgroundColor: AppParameters.formsBackgroundColor,
       body: Center(
@@ -187,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppParameters.formsForegroundColor,
-                            fontSize: AppParameters.messageFontSize,
+                            fontSize: AppSettings.messageBodyFontSize,
                           )),
                     ]),
               )
@@ -279,7 +279,7 @@ class _LoginPageState extends State<LoginPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: AppParameters.formsForegroundColor,
-                                  fontSize: AppParameters.messageFontSize,
+                                  fontSize: AppSettings.messageBodyFontSize,
                                 )),
                           ]),
                     ]),
@@ -314,16 +314,8 @@ class _LoginPageState extends State<LoginPage> {
             AppParameters.lastName +
             " خوش آمدید";
         Future.delayed(const Duration(seconds: 1), () async {
-          AppSetting(
-                  settingName: "lastUser",
-                  settingValue: AppParameters.currentUser)
-              .insert();
-
-          AppSetting(
-                  settingName: "lastLoggedPassword",
-                  settingValue: AppParameters.currentPassword)
-              .insert();
-
+          AppSettings.saveLastLoggedUser(AppParameters.currentUser);
+          AppSettings.saveLastLoggedPassword(AppParameters.currentPassword);
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
           formMessage = "نام کاربری و گذرواژه خود را وارد کنید";

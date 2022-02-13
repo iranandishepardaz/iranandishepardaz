@@ -9,6 +9,8 @@ import 'package:ap_me/TempMessages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'AppSettings.dart';
+
 class AdminPage extends StatefulWidget {
   @override
   _AdminPageState createState() => _AdminPageState();
@@ -78,7 +80,7 @@ class _AdminPageState extends State<AdminPage> {
                   child: TextField(
                     style: TextStyle(
                         color: AppParameters.sentDeliveredMessageForeColor,
-                        fontSize: AppParameters.messageFontSize),
+                        fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppParameters.formsForegroundColor,
                     textAlign: TextAlign.right,
                     decoration: InputDecoration(
@@ -96,7 +98,7 @@ class _AdminPageState extends State<AdminPage> {
                   child: TextField(
                     style: TextStyle(
                         color: AppParameters.sentDeliveredMessageForeColor,
-                        fontSize: AppParameters.messageFontSize),
+                        fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppParameters.formsForegroundColor,
                     textAlign: TextAlign.right,
                     keyboardType: TextInputType.number,
@@ -115,7 +117,7 @@ class _AdminPageState extends State<AdminPage> {
                   child: TextField(
                     style: TextStyle(
                         color: AppParameters.sentDeliveredMessageForeColor,
-                        fontSize: AppParameters.messageFontSize),
+                        fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppParameters.formsForegroundColor,
                     textAlign: TextAlign.right,
                     keyboardType: TextInputType.number,
@@ -230,7 +232,7 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _openSMSPage() {
-    if (AppParameters.canSeeLastSeen() && AppParameters.currentUser == "akbar")
+    if (AppParameters.canSeeLastSeen && AppParameters.currentUser == "akbar")
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => ShortMessagesPage()));
   }

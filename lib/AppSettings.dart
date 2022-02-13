@@ -17,8 +17,172 @@ class AppSettings {
     return sql;
   }
 
+  static Future readCurrentSetings() async {
+    await readFingerFirst();
+    await readNightMode();
+    await readMessageBodyFontSize();
+    await readMessageDateFontSize();
+    await readLastLoggedUser();
+    await readLastLoggedPassword();
+  }
+
   static Future addDefaultSetings() async {}
 
+  static Future<List<AppSetting>> getAllSettings(int count) async {
+    List<AppSetting> output = [];
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
+      AppSettings.TableName,
+      orderBy: 'settingName ASC',
+      limit: count,
+    );
+
+    var maps = await futureMaps;
+    for (int i = 0; i < maps.length; i++)
+      output.add(AppSetting.fromDb(maps[i]));
+    return output;
+  }
+
+  static Future<AppSetting> fetchSetting() async {
+    final Future<List<Map<String, dynamic>>> futureMaps =
+        AppDatabase.currentDB.query(
+      AppSettings.TableName,
+      where: 'settingName = ?',
+      whereArgs: ['nightMode'],
+      orderBy: 'settingName ASC',
+    );
+
+    var maps = await futureMaps;
+    if (maps.length != 0) {
+      return AppSetting.fromDb(maps.first);
+    }
+    return null;
+  }
+
+  static bool stringToBoolean(String value) {
+    return value.toLowerCase() == 'true' || value.toLowerCase() == '1';
+  }
+
+  static saveSetting(String name, String value) async {
+    try {
+      AppSetting tmpSetting =
+          AppSetting(settingName: name, settingValue: value);
+      await tmpSetting.insert();
+    } catch (e) {}
+  }
+
+  static Future<String> getSettingValue(String settingName) async {
+    AppSetting tmpSetting =
+        AppSetting(settingName: settingName, settingValue: "");
+    await tmpSetting.fetch();
+    return tmpSetting.settingValue;
+  }
+
+  static bool _nMode;
+  static get nightMode => _nMode == null ? false : _nMode;
+  static set nightMode(value) => _nMode = value;
+  static saveNightMode(bool nMode) async {
+    _nMode = nMode;
+    await saveSetting("nightMode", _nMode.toString());
+  }
+
+  static Future<bool> readNightMode() async {
+    _nMode = stringToBoolean(await getSettingValue("nightMode"));
+    return _nMode;
+  }
+
+  static bool _fingerFirst;
+  static get fingerFirst => _fingerFirst == null ? false : _fingerFirst;
+  static set fingerFirst(value) => _fingerFirst = value;
+
+  static savefingerFirst(bool fFirst) async {
+    _fingerFirst = fFirst;
+    await saveSetting("fingerFirst", fFirst.toString());
+  }
+
+  static Future<bool> readFingerFirst() async {
+    _fingerFirst = stringToBoolean(await getSettingValue("fingerFirst"));
+    return _fingerFirst;
+  }
+
+  static double defaultMessageBodyFontSize = 13;
+  static double _messageBodyFontSize;
+  static get messageBodyFontSize => _messageBodyFontSize == null
+      ? defaultMessageBodyFontSize
+      : _messageBodyFontSize;
+  static set messageBodyFontSize(value) => _messageBodyFontSize = value;
+  static saveMessageBodyFontSize(double msgFontSize) async {
+    _messageBodyFontSize = msgFontSize;
+    await saveSetting("messageBodyFontSize", msgFontSize.toString());
+  }
+
+  static Future<double> readMessageBodyFontSize() async {
+    _messageBodyFontSize = defaultMessageBodyFontSize;
+    try {
+      _messageBodyFontSize =
+          double.parse(await getSettingValue("messageBodyFontSize"));
+    } catch (e) {}
+    return _messageBodyFontSize;
+  }
+
+  static double defaultMessageDateFontSize = 11;
+  static double _messageDateFontSize;
+  static get messageDateFontSize => _messageDateFontSize == null
+      ? defaultMessageDateFontSize
+      : _messageDateFontSize;
+  static set messageDateFontSize(value) => _messageDateFontSize = value;
+  static saveMessageDateFontSize(double msgFontSize) async {
+    _messageDateFontSize = msgFontSize;
+    await saveSetting("messageDateFontSize", msgFontSize.toString());
+  }
+
+  static Future<double> readMessageDateFontSize() async {
+    _messageDateFontSize = defaultMessageDateFontSize;
+    try {
+      _messageDateFontSize =
+          double.parse(await getSettingValue("messageDateFontSize"));
+    } catch (e) {}
+    return _messageDateFontSize;
+  }
+
+  static String defaultLastLoggedUser = "-";
+  static String _lastLoggedUser;
+  static get lastLoggedUser =>
+      _lastLoggedUser == null ? defaultLastLoggedUser : _lastLoggedUser;
+  static set lastLoggedUser(value) => _lastLoggedUser = value;
+  static saveLastLoggedUser(String lLoggedUser) async {
+    _lastLoggedUser = lLoggedUser;
+    await saveSetting("lastLoggedUser", lLoggedUser);
+  }
+
+  static Future<String> readLastLoggedUser() async {
+    _lastLoggedUser = await getSettingValue("lastLoggedUser");
+    return _lastLoggedUser;
+  }
+
+  static String defaultLastLoggedPassword = ".";
+  static String _lastLoggedPassword;
+  static get lastLoggedPassword => _lastLoggedPassword == null
+      ? defaultLastLoggedPassword
+      : _lastLoggedPassword;
+  static set lastLoggedPassword(value) => _lastLoggedPassword = value;
+  static saveLastLoggedPassword(String lastPass) async {
+    _lastLoggedPassword = lastPass;
+    await saveSetting("lastLoggedPassword", lastPass);
+  }
+
+  static Future<String> readLastLoggedPassword() async {
+    _lastLoggedPassword = await getSettingValue("lastLoggedPassword");
+    return _lastLoggedPassword;
+  }
+
+  static get messageEditStyle => TextStyle(
+      backgroundColor: AppParameters.titlesBackgroundColor,
+      color: AppParameters.titlesForegroundColor,
+      fontSize: messageBodyFontSize);
+}
+
+class AppSettingsBack {
   static Future<List<AppSetting>> getAllSettings(int count) async {
     //var client = await AppDb.db;
     var res = await AppDatabase.currentDB.query(AppSettings.TableName,
@@ -31,15 +195,32 @@ class AppSettings {
     return [];
   }
 
-  static Future<int> localSettingsCount() async {
+  static Future<int> AppSettingsCount() async {
     //var client = await AppDb.db;
     return Sqflite.firstIntValue(await AppDatabase.currentDB
         .rawQuery('SELECT COUNT(*) FROM ' + AppSettings.TableName));
   }
 
-  static Future<void> clearAllLocalsettings() async {
+  static Future<void> clearAllAppSettings() async {
     //var client = await AppDb.db;
     return await AppDatabase.currentDB.delete(AppSettings.TableName);
+  }
+
+  static Future<String> getSettingValue(String settingName) async {
+    String outPut = "";
+    try {
+      var res = await AppDatabase.currentDB.query(
+        AppSettings.TableName,
+        where: '(settingName = ?)',
+        whereArgs: [settingName],
+      );
+      if (res.isNotEmpty) {
+        var settings =
+            res.map((settingMap) => AppSetting.fromDb(settingMap)).toList();
+        return settings.first.settingValue;
+      }
+    } catch (e) {}
+    return outPut;
   }
 
   static Future<AppSetting> getSetting(String settingName) async {
@@ -74,20 +255,20 @@ class AppSettings {
     });
 //return size;
   }
-*/
+
 
   static Future<double> setMessageFontSize(double size) async {
     try {
       AppSetting fontSize = AppSetting(
           settingName: "messageFontSize",
-          settingValue: AppParameters.messageFontSize.toString());
+          settingValue: AppSettings.messageBodyFontSize.toString());
       await fontSize.insert();
     } catch (e) {}
     return size;
   }
 
   static Future<double> getMessageFontSize() async {
-    double size = AppParameters.messageFontSize;
+    double size = AppSettings.messageBodyFontSize;
     AppSetting mFontS = await AppSettings.getSetting("messageFontSize");
     try {
       size = double.parse(mFontS.settingValue);
@@ -102,17 +283,58 @@ class AppSettings {
     try {
       AppSetting fontSize = AppSetting(
           settingName: "messageDateFontSize",
-          settingValue: AppParameters.messageDateFontSize.toString());
+          settingValue: AppSettings.messageDateFontSize.toString());
       await fontSize.insert();
     } catch (e) {}
     return size;
   }
-
+*/
+  /*
   static bool _nMode;
   static get nightMode => _nMode == null ? false : _nMode;
-  static set nightMode(bool nMode) => _nMode = nMode;
+  */
+  /*static get nightMode => () {
+        if (_nMode != null)
+          return _nMode;
+        else
+          return () {
+            (stringToBoolean( getSettingValue("nightMode")));
+          };
+      };*/
 
-  static bool getSomething() {
+  /*
+  static set nightMode(bool nMode) => () async {
+        _nMode = nMode;
+        await saveSetting("NightMode", nMode.toString());
+      };
+
+  static bool _fingerFirst;
+  static get fingerFirst => _fingerFirst == null ? false : _fingerFirst;
+  static set fingerFirst(bool value) => _fingerFirst = value;
+
+  static bool stringToBoolean(String value) {
+    return value.toLowerCase() == 'true' || value.toLowerCase() == '1';
+  }
+*/
+
+  /* static savefingerFirst(bool value) async {
+    try {
+      AppSetting tmpSetting = AppSetting(
+          settingName: "fingerFirst", settingValue: _fingerFirst.toString());
+      await tmpSetting.insert();
+    } catch (e) {}
+  }
+
+
+  static saveSetting(String name, String value) async {
+    try {
+      AppSetting tmpSetting =
+          AppSetting(settingName: name, settingValue: value);
+      await tmpSetting.insert();
+    } catch (e) {}
+  }
+*/
+  /* static bool getSetting() {
     if (_nMode == null) {
       readNightMode();
       Future.delayed(Duration(seconds: 2), () {
@@ -121,14 +343,29 @@ class AppSettings {
     } else
       return _nMode;
   }
+*/
+/*
+static bool _nMode;
+  static get nightMode => _nMode == null ? false : _nMode;
+  static set nightMode(bool nMode) => () async {
+        _nMode = nMode;
+        try {
+          AppSetting tmpSetting = AppSetting(
+              settingName: "nightMode", settingValue: _nMode.toString());
+          await tmpSetting.insert();
+        } catch (e) {}
+      };
 
+*/
+  /*
   static saveNightMode(bool nMode) async {
     _nMode = nMode;
-    try {
+    await saveSetting("nightMode", _nMode.toString());
+    /*try {
       AppSetting tmpSetting =
           AppSetting(settingName: "nightMode", settingValue: _nMode.toString());
-      tmpSetting.insert();
-    } catch (e) {}
+      await tmpSetting.insert();
+    } catch (e) {}*/
   }
 
   static Future<bool> readNightMode() async {
@@ -141,8 +378,10 @@ class AppSettings {
           .insert();
     }
     return _nMode;
-  }
+  }*/
 
+  /*
+*/
   /* static get nMode => () async {
         if (_nMode != null) return _nMode;
         try {
@@ -178,8 +417,8 @@ class AppSettings {
     return _nMode;
   }
 */
-  static Future<double> getMessageDateFontSize() async {
-    double size = AppParameters.messageDateFontSize;
+/*  static Future<double> getMessageDateFontSize() async {
+    double size = AppSettings.messageDateFontSize;
     AppSetting fontSize = await AppSettings.getSetting("messageDateFontSize");
     try {
       size = double.parse(fontSize.settingValue);
@@ -190,7 +429,7 @@ class AppSettings {
     }
     return size;
   }
-
+*/
 /*
   static double get messageFontSize {
     AppSetting mFontS = AppSettings.getSetting("messageFontSize") as AppSetting;
@@ -232,20 +471,17 @@ class AppSetting {
       : settingName = map['settingName'],
         settingValue = map['settingValue'];
 
-  Future<AppSetting> fetch(int settingName) async {
-    //var client = await AppDb.db;
+  Future fetch() async {
     final Future<List<Map<String, dynamic>>> futureMaps =
         AppDatabase.currentDB.query(
       AppSettings.TableName,
-      where: 'settingName = ? ',
+      where: 'settingName = ?',
       whereArgs: [settingName],
     );
-
     var maps = await futureMaps;
     if (maps.length != 0) {
-      return AppSetting.fromDb(maps.first);
+      settingValue = AppSetting.fromDb(maps.first).settingValue;
     }
-    return null;
   }
 
   Future<int> insert() async {
@@ -256,7 +492,12 @@ class AppSetting {
           AppSettings.TableName, toMapForDb(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } catch (e) {}
-    print("Insert Setting Result : " + result.toString());
+    print("Insert Setting : " +
+        settingName +
+        " => " +
+        settingValue +
+        " result:" +
+        result.toString());
     return result;
   }
 
@@ -278,7 +519,7 @@ class AppSetting {
 
   Future<List<List<String>>> upload() async {
     List<List<String>> records = await ApMeUtils.fetchData([
-      "111",
+      "503",
       AppParameters.currentUser,
       AppParameters.currentPassword,
       settingName.toString(),
