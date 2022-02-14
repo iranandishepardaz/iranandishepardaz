@@ -370,7 +370,12 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
             : "-",
         message: lastMessage.length > 0
             ? lastMessage[lastMessage.length - 1].deleted == 0
-                ? lastMessage[lastMessage.length - 1].messageBody
+                ? lastMessage[lastMessage.length - 1].messageBody.length > 50
+                    ? lastMessage[lastMessage.length - 1]
+                            .messageBody
+                            .substring(0, 50) +
+                        "..."
+                    : lastMessage[lastMessage.length - 1].messageBody
                 : "...."
             : "-",
         lastSeen: PersianDateUtil.MItoSH_Full(_friends[i].getLastSeenTime()),

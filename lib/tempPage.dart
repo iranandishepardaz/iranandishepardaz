@@ -1,7 +1,8 @@
 import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:flutter/material.dart';
-
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'AppSettings.dart';
 
 class TempPage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _TempPageState extends State<TempPage> {
       appBar: AppBar(
         backgroundColor: AppParameters.titlesBackgroundColor,
         foregroundColor: AppParameters.titlesForegroundColor,
+        brightness: AppSettings.nightMode ? Brightness.dark : Brightness.light,
         actions: [
           IconButton(
               onPressed: () {
@@ -43,26 +45,62 @@ class _TempPageState extends State<TempPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(strMessage,
-                style: TextStyle(fontSize: AppSettings.messageBodyFontSize)),
+                style: TextStyle(
+                    color: AppParameters.formsForegroundColor,
+                    fontSize: AppSettings.messageBodyFontSize)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   onPressed: () {
                     setState(() {
-                      AppSettings.nightMode = !AppSettings.nightMode;
-                      AppSettings.saveNightMode(true);
+                      AppSettings.saveNightMode(!AppSettings.nightMode);
                     });
                   },
-                  icon: Icon(Icons.settings_backup_restore_rounded),
+                  icon: Icon(
+                    AppSettings.nightMode
+                        ? Icons.nightlight_outlined
+                        : Icons.wb_sunny_outlined,
+                  ),
                   iconSize: 35,
                   color: AppParameters.titlesForegroundColor,
                 ),
                 IconButton(
                     onPressed: () {
                       setState(() {
-                        AppSettings.nightMode = false;
-                        AppSettings.readNightMode();
+/*
+        byte[] initVectorBytes = Encoding.UTF8.GetBytes(initVector);
+        byte[] plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+        PasswordDeriveBytes password = new PasswordDeriveBytes(passPhrase, null);
+        byte[] keyBytes = password.GetBytes(keysize / 8);
+        RijndaelManaged symmetricKey = new RijndaelManaged();
+        symmetricKey.Mode = CipherMode.CBC;
+        ICryptoTransform encryptor = symmetricKey.CreateEncryptor(keyBytes, initVectorBytes);
+        MemoryStream memoryStream = new MemoryStream();
+        CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
+        cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
+        cryptoStream.FlushFinalBlock();
+        byte[] cipherTextBytes = memoryStream.ToArray();
+        memoryStream.Close();
+        cryptoStream.Close();
+        return Convert.ToBase64String(cipherTextBytes);
+*/
+                        //String hashedPassword = sha256.convert(data).toString();
+                        String strPass = "Salam bache";
+                        String keyPhrase = "ApMe1400";
+                        String encrypted = "xkVrB5as8RIlQ/hMANbPSA==";
+                        // var bytes = utf8.encode(strPass); // data being hashed
+                        // var key = utf8.encode(keyPhrase);
+                        // var digest = sha256.convert(bytes);
+                        var key = utf8.encode(strPass);
+                        var bytes = utf8.encode(keyPhrase);
+
+                        var hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
+                        var digest = hmacSha256.convert(bytes);
+                        encrypted = utf8.decode(digest.bytes);
+                        print("HMAC digest as bytes: ${digest.bytes}");
+                        print("HMAC digest as hex string: $digest");
+                        print("HMAC digest as string: $encrypted");
                       });
                     },
                     icon: Icon(Icons.get_app_rounded),
@@ -122,6 +160,7 @@ class _TempPageState extends State<TempPage> {
           return Row(
             children: <Widget>[
               Expanded(
+                flex: 30,
                 child: Column(
                   children: <Widget>[
                     Text('Name', style: myStyle()),
@@ -131,6 +170,7 @@ class _TempPageState extends State<TempPage> {
                 ),
               ),
               Expanded(
+                flex: 30,
                 child: Column(
                   children: <Widget>[
                     Text('Value', style: myStyle()),
@@ -139,6 +179,7 @@ class _TempPageState extends State<TempPage> {
                 ),
               ),
               Expanded(
+                flex: 10,
                 child: Material(
                   child: IconButton(
                     icon: Icon(Icons.delete),
@@ -147,6 +188,7 @@ class _TempPageState extends State<TempPage> {
                 ),
               ),
               Expanded(
+                flex: 10,
                 child: Material(
                   child: IconButton(
                     icon: Icon(Icons.add),

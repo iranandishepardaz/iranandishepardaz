@@ -36,6 +36,7 @@ extension Enummer on String {
 }
 
 class AppParameters {
+  static bool canCheckBiometric = false;
   static double iconsSize = 30;
   static String macAddress = "63:36:0F:05:92:E3";
   static String smsUser = "unknown";

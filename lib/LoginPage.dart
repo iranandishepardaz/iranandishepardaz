@@ -21,7 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   String formMessage = "...";
   bool isLoading = false;
 
-  bool _canCheckBiometric = false;
   List<BiometricType> _availableBiometrics = [];
   String _autherized = "Not Autherized";
   LocalAuthentication auth = LocalAuthentication();
@@ -36,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     setState(() {
-      _canCheckBiometric = canCheckBiometric;
+      AppParameters.canCheckBiometric = canCheckBiometric;
     });
   }
 
@@ -91,13 +90,14 @@ class _LoginPageState extends State<LoginPage> {
     _getAvailableBiometric();
     _getVer();
     //passwordController.text = AppParameters.currentPassword;
+    if (AppSettings.fingerFirst) _authenticate();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-    //if (AppSettings.fingerFirst) _authenticate();
+
     return Scaffold(
       backgroundColor: AppParameters.formsBackgroundColor,
       body: Center(
@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: _authenticate,
                             color: Colors.blue,
                             icon: Icon(Icons.fingerprint_outlined)),
-                        visible: _canCheckBiometric,
+                        visible: AppParameters.canCheckBiometric,
                       ),
                       Text(formMessage,
                           textAlign: TextAlign.center,
@@ -318,6 +318,7 @@ class _LoginPageState extends State<LoginPage> {
           AppSettings.saveLastLoggedPassword(AppParameters.currentPassword);
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
+          if (AppSettings.fingerFirst) _authenticate();
           formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
         });
       } else {

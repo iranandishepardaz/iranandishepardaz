@@ -43,26 +43,6 @@ class FriendsPageDrawer {
               ListTile(
                 tileColor: AppParameters.formsBackgroundColor,
                 title: Text(
-                  "اثر انگشت",
-                  textDirection: TextDirection.rtl,
-                  style: new TextStyle(
-                    color: AppParameters.formsForegroundColor,
-                    fontSize: AppSettings.messageBodyFontSize,
-                  ),
-                ),
-                leading: Switch(
-                  value: AppSettings.fingerFirst,
-                  onChanged: (value) async {
-                    parent.setState(() {
-                      AppSettings.fingerFirst = value;
-                    });
-                    AppSettings.savefingerFirst(AppSettings.fingerFirst);
-                  },
-                ),
-              ),
-              ListTile(
-                tileColor: AppParameters.formsBackgroundColor,
-                title: Text(
                   "تم",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
@@ -148,6 +128,31 @@ class FriendsPageDrawer {
                                   .insert();*/
                   });
                 },
+              ),
+              Visibility(
+                visible: AppParameters.canCheckBiometric,
+                child: ListTile(
+                  tileColor: AppParameters.formsBackgroundColor,
+                  title: Text(
+                    "اثر انگشت",
+                    textDirection: TextDirection.rtl,
+                    style: new TextStyle(
+                      color: AppParameters.formsForegroundColor,
+                      fontSize: AppSettings.messageBodyFontSize,
+                    ),
+                  ),
+                  leading: Switch(
+                    activeColor: AppParameters.sentDeliveredMessageForeColor,
+                    inactiveThumbColor: AppParameters.sentMessageForeColor,
+                    value: AppSettings.fingerFirst,
+                    onChanged: (value) async {
+                      parent.setState(() {
+                        AppSettings.fingerFirst = value;
+                      });
+                      AppSettings.savefingerFirst(AppSettings.fingerFirst);
+                    },
+                  ),
+                ),
               ),
               Visibility(
                   visible: AppParameters.canSeeLastSeen,
