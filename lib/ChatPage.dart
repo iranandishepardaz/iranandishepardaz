@@ -139,7 +139,10 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 icon: Icon(Icons.arrow_downward_sharp),
               ),
               IconButton(
-                color: AppParameters.titlesForegroundColor,
+                //color: AppParameters.titlesForegroundColor,
+                color: AppParameters.networkOK
+                    ? AppParameters.titlesForegroundColor
+                    : Colors.red,
                 onPressed: () {
                   // getMessages(true);
                   getUnsynced();
@@ -325,17 +328,22 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                 flex: 10,
                                 child: TextButton(
                                     onPressed: () {
-                                      sendTextMessage();
-                                      _scrollController.animateTo(
-                                        0,
-                                        duration: Duration(seconds: 2),
-                                        curve: Curves.fastOutSlowIn,
-                                      );
+                                      if (AppParameters.networkOK) {
+                                        sendTextMessage();
+                                        _scrollController.animateTo(
+                                          0,
+                                          duration: Duration(seconds: 2),
+                                          curve: Curves.fastOutSlowIn,
+                                        );
+                                      } else
+                                        showSnackMessage(
+                                            "ارتباط با سرور برقرار نیست شبکه را چک کنید");
                                     },
                                     child: Icon(
                                       Icons.send,
-                                      color:
-                                          AppParameters.titlesForegroundColor,
+                                      color: AppParameters.networkOK
+                                          ? AppParameters.titlesForegroundColor
+                                          : Colors.red,
                                     ))),
                           ],
                         )),

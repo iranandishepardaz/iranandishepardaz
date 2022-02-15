@@ -30,13 +30,14 @@ class MessageEditor {
             backgroundColor: AppParameters.formsBackgroundColor,
             child: Container(
               child: Padding(
-                padding: const EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(5.0),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(3.0),
                   child: Container(
                     height: (currentMessage.fullUrl.length > 0
-                            ? _inputHeight * 2.5
-                            : _inputHeight) +
+                                ? _inputHeight * 2.5
+                                : _inputHeight) *
+                            2 +
                         10 +
                         AppParameters.iconsSize * 1.5,
                     child: Column(
@@ -52,7 +53,9 @@ class MessageEditor {
                               )
                             : Center(),
                         Container(
-                            height: _inputHeight,
+                            height: currentMessage.fullUrl.length > 0
+                                ? _inputHeight
+                                : _inputHeight * 2,
                             decoration: BoxDecoration(
                               color: AppParameters.titlesBackgroundColor,
                               borderRadius:
@@ -168,7 +171,7 @@ class MessageEditor {
                                                   },
                                                   icon: Icon(Icons.check),
                                                   color: AppParameters
-                                                      .formsForegroundColor,
+                                                      .sentDeliveredMessageForeColor,
                                                 ),
                                           IconButton(
                                             onPressed: () async {
@@ -179,7 +182,7 @@ class MessageEditor {
                                             },
                                             icon: Icon(Icons.delete),
                                             color: AppParameters
-                                                .formsForegroundColor,
+                                                .sentDeliveredMessageForeColor,
                                           ),
                                           IconButton(
                                             onPressed: () {
@@ -194,7 +197,7 @@ class MessageEditor {
                                             },
                                             icon: Icon(Icons.copy),
                                             color: AppParameters
-                                                .formsForegroundColor,
+                                                .sentDeliveredMessageForeColor,
                                           ),
                                           IconButton(
                                             onPressed: () {
@@ -204,7 +207,7 @@ class MessageEditor {
                                             },
                                             icon: Icon(Icons.undo),
                                             color: AppParameters
-                                                .formsForegroundColor,
+                                                .sentDeliveredMessageForeColor,
                                           ),
                                           /*
                                           IconButton(
@@ -287,19 +290,72 @@ class MessageEditor {
   }
 
   Future<ResultEnums> deleteMessage() async {
-    ApMeMessage messageToDelete =
-        await ApMeMessages.deleteMessage(currentMessage);
-    if (messageToDelete != null) {
-      if (messageToDelete.deleted == 0) {
-        await messageToDelete.delete();
-        return ResultEnums.OK_Deletted;
-      } else {
-        await messageToDelete.update();
-        return ResultEnums.OK_MarkedDeleted;
-      }
-    } else {
-      return ResultEnums.Error_Deletting;
-    }
+    ResultEnums output = ResultEnums.Unknown;
+    AlertDialog dialog = new AlertDialog(
+      backgroundColor: AppParameters.titlesBackgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+            width: 2.0, color: AppParameters.sentDeliveredMessageForeColor),
+      ),
+      elevation: 16,
+      title: Text(
+        "از حذف این پیام اطمینان دارید؟",
+        style: TextStyle(color: AppParameters.formsForegroundColor),
+      ),
+      content: Container(
+        height: 70,
+        child: Container(
+          color: AppParameters.formsBackgroundColor,
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: AppParameters.formsForegroundColor),
+                borderRadius: BorderRadius.all(Radius.circular(5.0))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  onPressed: () async {
+                    ApMeMessage messageToDelete =
+                        await ApMeMessages.deleteMessage(currentMessage);
+
+                    if (messageToDelete != null) {
+                      if (messageToDelete.deleted == 0) {
+                        await messageToDelete.delete();
+                        output = ResultEnums.OK_Deletted;
+                      } else {
+                        await messageToDelete.update();
+                        output = ResultEnums.OK_MarkedDeleted;
+                      }
+                    } else {
+                      output = ResultEnums.Error_Deletting;
+                    }
+                    Navigator.of(currentContext).pop();
+                  },
+                  icon: Icon(Icons.delete_forever),
+                  color: AppParameters.formsForegroundColor,
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(currentContext).pop();
+                    return ResultEnums.Cancelled;
+                  },
+                  icon: Icon(
+                    Icons.undo,
+                    color: AppParameters.formsForegroundColor,
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await showDialog(
+        context: currentContext,
+        barrierDismissible: false,
+        builder: (_) => dialog);
+    return output;
   }
 
   Future<ResultEnums> deleteDeliveredMessage() async {

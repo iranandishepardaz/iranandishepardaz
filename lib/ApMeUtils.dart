@@ -39,6 +39,7 @@ class ApMeUtils {
 
   static Future transactWithSiteFull(
       String operation, List<String> parameters, String base64File) async {
+    AppParameters.networkOK = false;
     String result = "";
     Map<String, String> headers = {
       'Content-Type': 'text/xml; charset=utf-8',
@@ -91,6 +92,7 @@ class ApMeUtils {
           result = response.body.substring(index + operation.length + 8);
           index = result.indexOf("</" + operation + "Result>");
           result = result.substring(0, index);
+          AppParameters.networkOK = true;
         } else {}
       } else {
         return ("Web request error:" + response.statusCode.toString());
