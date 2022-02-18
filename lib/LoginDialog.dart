@@ -13,10 +13,10 @@ class LoginDialog {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide(
-                  width: 2.0, color: AppParameters.titlesForegroundColor),
+                  width: 2.0, color: AppSettings.titlesForegroundColor),
             ),
             elevation: 16,
-            backgroundColor: AppParameters.titlesBackgroundColor,
+            backgroundColor: AppSettings.titlesBackgroundColor,
             child: Container(
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
@@ -37,16 +37,16 @@ class LoginDialog {
     showDialog(
         context: context,
         builder: (context) {
-          txtUserNameController.text = AppParameters.currentUser;
+          txtUserNameController.text = ""; // AppParameters.currentUser;
           return StatefulBuilder(builder: (context, setState) {
             return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
-                    width: 4.0, color: AppParameters.titlesForegroundColor),
+                    width: 4.0, color: AppSettings.titlesForegroundColor),
               ),
               elevation: 16,
-              backgroundColor: AppParameters.titlesBackgroundColor,
+              backgroundColor: AppSettings.titlesBackgroundColor,
               child: Container(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
@@ -131,7 +131,7 @@ class LoginDialog {
                             Text(txtformMessageController.text,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: AppParameters.titlesForegroundColor,
+                                  color: AppSettings.titlesForegroundColor,
                                   fontSize: AppSettings.messageBodyFontSize,
                                 )),
                           ]),

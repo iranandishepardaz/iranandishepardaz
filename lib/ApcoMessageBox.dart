@@ -25,10 +25,10 @@ class ApcoMessageBox {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide(
-                  width: 2.0, color: AppParameters.titlesForegroundColor),
+                  width: 2.0, color: AppSettings.titlesForegroundColor),
             ),
             elevation: 16,
-            backgroundColor: AppParameters.titlesBackgroundColor,
+            backgroundColor: AppSettings.titlesBackgroundColor,
             child: Container(
               child: Padding(
                 padding: const EdgeInsets.all(18.0),
@@ -93,7 +93,7 @@ class ApcoMessageBox {
                           Text(txtformMessageController.text,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: AppParameters.titlesForegroundColor,
+                                color: AppSettings.titlesForegroundColor,
                                 fontSize: AppSettings.messageBodyFontSize,
                               )),
                         ]),
@@ -117,10 +117,10 @@ class ApcoMessageBox {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
-                    width: 2.0, color: AppParameters.titlesForegroundColor),
+                    width: 2.0, color: AppSettings.titlesForegroundColor),
               ),
               elevation: 16,
-              backgroundColor: AppParameters.formsBackgroundColor,
+              backgroundColor: AppSettings.formsBackgroundColor,
               child: Column(
                 children: [
                   Padding(
@@ -128,17 +128,17 @@ class ApcoMessageBox {
                     child: Container(
                         height: _inputHeight,
                         decoration: BoxDecoration(
-                          color: AppParameters.titlesBackgroundColor,
+                          color: AppSettings.titlesBackgroundColor,
                           borderRadius: BorderRadius.all(Radius.circular(15)),
                           border: Border(
                               top: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               bottom: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               left: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               right: BorderSide(
-                                  color: AppParameters.formsForegroundColor)),
+                                  color: AppSettings.formsForegroundColor)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,19 +150,19 @@ class ApcoMessageBox {
                                   child: TextField(
                                     style: TextStyle(
                                         color:
-                                            AppParameters.titlesForegroundColor,
+                                            AppSettings.titlesForegroundColor,
                                         fontSize:
                                             AppSettings.messageBodyFontSize),
                                     cursorColor:
-                                        AppParameters.titlesForegroundColor,
+                                        AppSettings.titlesForegroundColor,
                                     cursorHeight:
                                         AppSettings.messageBodyFontSize * 2,
                                     textAlign: TextAlign.right,
                                     decoration: InputDecoration(
                                       hintText: 'پیام خود را بنویسید',
                                       hintStyle: TextStyle(
-                                          color: AppParameters
-                                              .sentMessageForeColor,
+                                          color:
+                                              AppSettings.sentMessageForeColor,
                                           fontSize:
                                               AppSettings.messageBodyFontSize),
                                       contentPadding: EdgeInsets.all(2),
@@ -194,9 +194,9 @@ class ApcoMessageBox {
                         textDirection: TextDirection.rtl,
                         child: TextField(
                           style: TextStyle(
-                              color: AppParameters.titlesForegroundColor,
+                              color: AppSettings.titlesForegroundColor,
                               fontSize: AppSettings.messageBodyFontSize),
-                          cursorColor: AppParameters.titlesForegroundColor,
+                          cursorColor: AppSettings.titlesForegroundColor,
                           cursorHeight: AppSettings.messageBodyFontSize * 2,
                           textAlign: TextAlign.right,
                           decoration: InputDecoration(

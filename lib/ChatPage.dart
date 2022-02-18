@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:ap_me/ApcoMessageBox.dart';
 import 'package:ap_me/ChatHeader.dart';
+import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:ap_me/MessageBubble.dart';
 import 'package:ap_me/MessageEditor.dart';
 import 'package:ap_me/TempMessages.dart';
@@ -34,6 +35,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final messageBodyTextController = TextEditingController();
   ApMeMessage currentMessage;
   int currentBubbleId = -1;
+  int charCount = 0;
   bool isLoading = false;
   bool isEditing = false;
   bool canSendImage =
@@ -118,12 +120,12 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             appBar: ChatHeader().chatBar([
               IconButton(
                   icon: Icon(Icons.arrow_back_ios,
-                      color: AppParameters.titlesForegroundColor),
+                      color: AppSettings.titlesForegroundColor),
                   onPressed: () {
                     goBackToFriendsPage();
                   }),
               IconButton(
-                color: AppParameters.titlesForegroundColor,
+                color: AppSettings.titlesForegroundColor,
                 onPressed: () {
                   _scrollController.animateTo(
                     0,
@@ -139,9 +141,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 icon: Icon(Icons.arrow_downward_sharp),
               ),
               IconButton(
-                //color: AppParameters.titlesForegroundColor,
+                //color: AppSettings.titlesForegroundColor,
                 color: AppParameters.networkOK
-                    ? AppParameters.titlesForegroundColor
+                    ? AppSettings.titlesForegroundColor
                     : Colors.red,
                 onPressed: () {
                   // getMessages(true);
@@ -152,7 +154,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             ], isLoading, this.context),
             body: SafeArea(
                 child: Container(
-              color: AppParameters.formsBackgroundColor,
+              color: AppSettings.formsBackgroundColor,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -182,7 +184,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                               });
                             },
                             icon: Icon(Icons.download),
-                            color: AppParameters.formsForegroundColor,
+                            color: AppSettings.formsForegroundColor,
                           ),
                         )
                       : Expanded(flex: 1, child: Text("...")),
@@ -217,14 +219,14 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                               messagesToShowCount, false, 0);
                                     },
                                     icon: Icon(Icons.download),
-                                    color: AppParameters.formsForegroundColor,
+                                    color: AppSettings.formsForegroundColor,
                                   ),
                                   Center(
                                     child: Text(
                                       "هنوز پیامی فرستاده نشده\n\r اولین پیام را بفرستید",
                                       style: TextStyle(
-                                          color: AppParameters
-                                              .formsForegroundColor,
+                                          color:
+                                              AppSettings.formsForegroundColor,
                                           fontSize:
                                               AppSettings.messageBodyFontSize),
                                     ),
@@ -265,20 +267,21 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     child: Container(
                         height: _inputHeight,
                         decoration: BoxDecoration(
-                          color: AppParameters.titlesBackgroundColor,
+                          color: AppSettings.titlesBackgroundColor,
                           borderRadius: BorderRadius.all(Radius.circular(15)),
                           border: Border(
                               top: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               bottom: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               left: BorderSide(
-                                  color: AppParameters.formsForegroundColor),
+                                  color: AppSettings.formsForegroundColor),
                               right: BorderSide(
-                                  color: AppParameters.formsForegroundColor)),
+                                  color: AppSettings.formsForegroundColor)),
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                                 flex: 80,
@@ -287,22 +290,22 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                   child: TextField(
                                     style: TextStyle(
                                         color:
-                                            AppParameters.titlesForegroundColor,
+                                            AppSettings.titlesForegroundColor,
                                         fontSize:
                                             AppSettings.messageBodyFontSize),
                                     cursorColor:
-                                        AppParameters.titlesForegroundColor,
+                                        AppSettings.titlesForegroundColor,
                                     cursorHeight:
                                         AppSettings.messageBodyFontSize * 2,
                                     textAlign: TextAlign.right,
                                     decoration: InputDecoration(
-                                      hintText: 'پیام خود را بنویسید',
+                                      hintText: '',
                                       hintStyle: TextStyle(
-                                          color: AppParameters
-                                              .sentMessageForeColor,
+                                          color: AppSettings
+                                              .disabledForegroundColor,
                                           fontSize:
                                               AppSettings.messageBodyFontSize),
-                                      contentPadding: EdgeInsets.all(2),
+                                      contentPadding: EdgeInsets.all(4),
                                     ),
                                     maxLines: null,
                                     controller: messageBodyTextController,
@@ -323,7 +326,6 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                       },
                                       child: Icon(Icons.attach_file))),
                             ),
-//
                             Expanded(
                                 flex: 10,
                                 child: TextButton(
@@ -339,11 +341,31 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                         showSnackMessage(
                                             "ارتباط با سرور برقرار نیست شبکه را چک کنید");
                                     },
-                                    child: Icon(
-                                      Icons.send,
-                                      color: AppParameters.networkOK
-                                          ? AppParameters.titlesForegroundColor
-                                          : Colors.red,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.send,
+                                          color: AppParameters.networkOK
+                                              ? AppSettings
+                                                  .titlesForegroundColor
+                                              : Colors.red,
+                                        ),
+                                        Visibility(
+                                          visible: charCount > 100,
+                                          child: Text(
+                                            charCount.toString(),
+                                            style: TextStyle(
+                                                fontSize: AppSettings
+                                                    .messageDateFontSize,
+                                                color: AppSettings
+                                                    .titlesForegroundColor),
+                                          ),
+                                        ),
+                                      ],
                                     ))),
                           ],
                         )),
@@ -354,7 +376,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 ],
               ),
             )),
-            endDrawer: OptionsDrawer.SideDrawer(this),
+            endDrawer: FriendsPageDrawer.sideDrawer(this),
           )),
     );
   }
@@ -365,17 +387,23 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 
-  double _inputHeight = (3 * AppSettings.messageBodyFontSize);
+  double _inputHeight = (4 * AppSettings.messageBodyFontSize);
 
   void _adjustMessageBodyTextField() async {
-    int count = messageBodyTextController.text.split('\n').length;
-    if (count < 6) {
-      //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
-      var newHeight = (count + 1) * 2 * AppSettings.messageBodyFontSize;
+    int lines = messageBodyTextController.text.split('\n').length;
+    charCount = messageBodyTextController.text.length;
+    int charlines = charCount ~/ 60;
+    if (lines == 1) lines++;
+    lines += charlines + 1;
+
+    if (lines > 6) lines = 6;
+    //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
+    var newHeight = lines * AppSettings.messageBodyFontSize +
+        (AppSettings.messageBodyFontSize * 0.75);
+    if (_inputHeight != newHeight)
       setState(() {
         _inputHeight = newHeight;
       });
-    }
   }
 
   editMessage(int bubbleID) async {
@@ -432,12 +460,12 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       }
       if (strValue.length > 0)
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: AppParameters.titlesBackgroundColor,
+          backgroundColor: AppSettings.titlesBackgroundColor,
           content: Container(
             child: Text(
               strValue,
               style: TextStyle(
-                color: AppParameters.formsForegroundColor,
+                color: AppSettings.formsForegroundColor,
               ),
             ),
           ),
@@ -694,6 +722,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   Future<bool> sendTextMessage() async {
     if (textToSend.length == 0) return await deleteTextMessage();
     if (isEditing) return editTextMessage();
+    bool messageSent = false;
     String tmpText = textToSend;
     textToSend = "";
     isLoading = true;
@@ -704,7 +733,16 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       allMessages.add(sentMessage);
       await getUnsynced();
       generateBubbles();
+      messageSent = true;
     } else {
+      //textToSend = tmpText;
+      //messageBodyTextController.text = tmpText;
+      String strMes = "پیام فرستاده نشد ";
+      if (charCount > 800) strMes = "پیام طولانی است آنرا تقسیم بندی کنید";
+      showSnackMessage(strMes);
+/*
+// Save To TempMessages to send later
+
       TempMessage tempMessage = new TempMessage(
         messageId: 0,
         fromId: AppParameters.currentUser,
@@ -723,14 +761,15 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         0,
         duration: Duration(seconds: 1),
         curve: Curves.fastOutSlowIn,
-      );
+      );*/
       // messageBodyTextController.text = "";
     }
     isLoading = false;
-    setState(() {
-      // getMessages(false);
-      messageBodyTextController.text = "";
-    });
+    if (messageSent)
+      setState(() {
+        // getMessages(false);
+        messageBodyTextController.text = "";
+      });
     return true;
   }
 

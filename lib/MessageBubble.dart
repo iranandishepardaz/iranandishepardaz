@@ -4,6 +4,7 @@ import 'package:ap_me/ChatPage.dart';
 import 'package:ap_me/PersianDateUtil.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'AppParameters.dart';
 import 'AppSettings.dart';
@@ -43,7 +44,7 @@ class _MessageBubbleState extends State<MessageBubble> {
                 : "Does not sent!",
             style: TextStyle(
                 fontSize: AppSettings.messageDateFontSize,
-                color: AppParameters.formsForegroundColor),
+                color: AppSettings.formsForegroundColor),
           ),
           Visibility(
             visible: widget.currentMessage.messageType == 1,
@@ -69,9 +70,9 @@ class _MessageBubbleState extends State<MessageBubble> {
                 ? Colors.grey
                 : widget.currentMessage.fromId == AppParameters.currentUser
                     ? (widget.currentMessage.uploaded > 0
-                        ? AppParameters.sentMessageBackColor
+                        ? AppSettings.sentMessageBackColor
                         : Colors.red)
-                    : AppParameters.receivedMessageBackColor,
+                    : AppSettings.receivedMessageBackColor,
             child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
                 child: GestureDetector(
@@ -80,6 +81,11 @@ class _MessageBubbleState extends State<MessageBubble> {
                         widget.currentMessage.fromId ==
                             AppParameters.currentUser)
                       widget.parent.editMessage(widget.bubbleId);
+                  },
+                  onDoubleTap: () {
+                    Clipboard.setData(
+                        ClipboardData(text: widget.currentMessage.messageBody));
+                    widget.parent.showSnackMessage("در حافظه موقت کپی شد");
                   },
                   // Start List multi-select mode on long press
                   onLongPress: () {
@@ -103,10 +109,13 @@ class _MessageBubbleState extends State<MessageBubble> {
                               : "پیام حذف شده",
                       style: TextStyle(
                           fontSize: AppSettings.messageBodyFontSize,
-                          color: widget.currentMessage.deliveredAt > 0 ||
-                                  (!AppParameters.canSeeLastSeen)
-                              ? AppParameters.sentDeliveredMessageForeColor
-                              : AppParameters.sentMessageForeColor),
+                          color: widget.currentMessage.fromId !=
+                                  AppParameters.currentUser
+                              ? AppSettings.receivedMessageForeColor
+                              : widget.currentMessage.deliveredAt > 0 ||
+                                      (!AppParameters.canSeeLastSeen)
+                                  ? AppSettings.sentDeliveredMessageForeColor
+                                  : AppSettings.sentMessageForeColor),
                     ),
                   ),
                 )),

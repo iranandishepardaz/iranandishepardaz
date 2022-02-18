@@ -33,7 +33,6 @@ class _LoginPageState extends State<LoginPage> {
       print("Error: $e");
     }
     if (!mounted) return;
-
     setState(() {
       AppParameters.canCheckBiometric = canCheckBiometric;
     });
@@ -99,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
     var isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return Scaffold(
-      backgroundColor: AppParameters.formsBackgroundColor,
+      backgroundColor: AppSettings.formsBackgroundColor,
       body: Center(
         child: isPortrait
             ? Container(
@@ -186,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(formMessage,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppParameters.formsForegroundColor,
+                            color: AppSettings.formsForegroundColor,
                             fontSize: AppSettings.messageBodyFontSize,
                           )),
                     ]),
@@ -278,7 +277,7 @@ class _LoginPageState extends State<LoginPage> {
                             Text(formMessage,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: AppParameters.formsForegroundColor,
+                                  color: AppSettings.formsForegroundColor,
                                   fontSize: AppSettings.messageBodyFontSize,
                                 )),
                           ]),

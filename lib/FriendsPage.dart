@@ -16,6 +16,7 @@ import 'AppParameters.dart';
 import 'ChatPage.dart';
 import 'ApMeMessages.dart';
 import 'PersianDateUtil.dart';
+import 'FriendsPageAppBar.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -24,10 +25,10 @@ const MethodChannel platform =
 
 class FriendsPage extends StatefulWidget {
   @override
-  _FriendsPageState createState() => _FriendsPageState();
+  FriendsPageState createState() => FriendsPageState();
 }
 
-class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
+class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   List<FriendModel> friendModels = [];
   List<Friend> _friends;
   bool isLoading = false;
@@ -35,7 +36,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   int _newMessagesCount = 0;
   bool blnTimerInitialized = false;
   Timer tmrFriendsDataRefresher;
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -43,6 +44,8 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     initNotif();
     super.initState();
     initialize();
+
+    //AppSettings.resetToDefaultSetings();
   }
 
   void initialize() async {
@@ -53,12 +56,13 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
             settingName: "lastLoggedUser",
             settingValue: AppParameters.currentUser)
         .insert();
+    initialized = true;
     try {
       await refreshFriends();
     } catch (e) {}
-    initialized = true;
-    setState(() {});
-    _startRefreshTimer();
+    setState(() {
+      //_startRefreshTimer();
+    });
   }
 
   @override
@@ -113,84 +117,13 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
           return Future.delayed(Duration(seconds: 1), () {});
         },
         child: Scaffold(
-            key: _scaffoldKey,
-            appBar: AppBar(
-              //textTheme: TextTheme(),
-              //textTheme: TextTheme(bodyText1: TextStyle(color: Colors.yellow)),
-              backgroundColor: AppParameters.titlesBackgroundColor,
-              foregroundColor: AppParameters.titlesForegroundColor,
-              //shadowColor: AppParameters.titlesForegroundColor,
-              //backgroundColor: Colors.red[400],
-              brightness:
-                  AppSettings.nightMode ? Brightness.dark : Brightness.light,
-              centerTitle: false,
-              titleSpacing: 0.0,
-              leadingWidth: 35,
-              leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios),
-                  color: AppParameters.formsForegroundColor,
-                  onPressed: () => {
-                        backToLoginPage(),
-                      }),
-              actions: <Widget>[
-                Visibility(
-                  child: Container(
-                      child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: CircularProgressIndicator(
-                      backgroundColor: AppParameters.titlesForegroundColor,
-                      strokeWidth: 4,
-                    ),
-                  )),
-                  visible: isLoading || !initialized,
-                ),
-                Visibility(
-                  child: Container(
-                    width: 50,
-                    height: 10,
-                    child: IconButton(
-                      icon: Icon(Icons.menu),
-                      color: AppParameters.formsForegroundColor,
-                      onPressed: () {
-                        // getFriendsAndLastMessages(false);
-                        _scaffoldKey.currentState.openEndDrawer();
-                        //openNotPage();
-                      },
-                    ),
-                  ),
-                  visible: !isLoading && initialized,
-                ),
-              ],
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      LoginDialog().showNetworkImage(
-                          AppParameters.currentUserAvatarUrl(), this.context);
-                    },
-                    child: CircleAvatar(
-                      radius: 24.0,
-                      backgroundImage:
-                          NetworkImage(AppParameters.currentUserAvatarUrl()),
-                    ),
-                  ),
-                  Text(
-                    // AppParameters.prefix +
-                    //    " " +
-                    AppParameters.firstName + " " + AppParameters.lastName,
-                    style: TextStyle(
-                        fontSize: AppSettings.messageBodyFontSize + 2,
-                        color: AppParameters.titlesForegroundColor),
-                  ),
-                ],
-              ),
-            ),
+            key: scaffoldKey,
+            appBar: FriendsAppBar(this).appBar(),
             body: Container(
               decoration: new BoxDecoration(
                 border: new Border.all(
-                    color: AppParameters.titlesBackgroundColor, width: 4),
-                color: AppParameters.formsBackgroundColor,
+                    color: AppSettings.titlesBackgroundColor, width: 4),
+                color: AppSettings.formsBackgroundColor,
               ),
               child: ListView.builder(
                 itemCount: friendModels.length,
@@ -219,7 +152,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                             Text(
                               _model.name,
                               style: new TextStyle(
-                                color: AppParameters.formsForegroundColor,
+                                color: AppSettings.formsForegroundColor,
                               ),
                             ),
                             SizedBox(
@@ -230,7 +163,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                                   ? _model.datetime + "\n" + _model.lastSeen
                                   : _model.datetime,
                               style: TextStyle(
-                                  color: AppParameters.formsForegroundColor,
+                                  color: AppSettings.formsForegroundColor,
                                   fontSize: AppSettings.messageDateFontSize),
                             ),
                           ],
@@ -240,19 +173,20 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                           child: Text(
                             _model.message,
                             style: TextStyle(
-                                color: AppParameters.formsForegroundColor,
+                                color: AppSettings.formsForegroundColor,
                                 fontSize: AppSettings.messageBodyFontSize),
                           ),
                         ),
                         trailing: Icon(
                           Icons.arrow_forward_ios,
                           size: 14.0,
-                          color: AppParameters.formsForegroundColor,
+                          color: AppSettings.formsForegroundColor,
                         ),
                       ),
                       Divider(
-                        color: AppParameters.titlesForegroundColor,
-                        height: 5.0,
+                        color: AppSettings.titlesBackgroundColor,
+                        thickness: 3,
+                        height: 3.0,
                       ),
                       SizedBox(
                         height: 20,
@@ -262,8 +196,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
                 },
               ),
             ),
-            endDrawer: FriendsPageDrawer.sideDrawer(
-                this))); // FriendsPageDrawer.sideDrawer(this)));
+            endDrawer: FriendsPageDrawer.sideDrawer(this)));
   }
 
   void refreshContent() {

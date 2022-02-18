@@ -33,7 +33,7 @@ class _AdminPageState extends State<AdminPage> {
     return Scaffold(
         body: SafeArea(
             child: Container(
-      color: AppParameters.formsBackgroundColor,
+      color: AppSettings.formsBackgroundColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -79,9 +79,9 @@ class _AdminPageState extends State<AdminPage> {
                   flex: 40,
                   child: TextField(
                     style: TextStyle(
-                        color: AppParameters.sentDeliveredMessageForeColor,
+                        color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
-                    cursorColor: AppParameters.formsForegroundColor,
+                    cursorColor: AppSettings.formsForegroundColor,
                     textAlign: TextAlign.right,
                     decoration: InputDecoration(
                       hintText: 'پیام',
@@ -97,13 +97,13 @@ class _AdminPageState extends State<AdminPage> {
                   flex: 30,
                   child: TextField(
                     style: TextStyle(
-                        color: AppParameters.sentDeliveredMessageForeColor,
+                        //color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
-                    cursorColor: AppParameters.formsForegroundColor,
+                    cursorColor: AppSettings.formsForegroundColor,
                     textAlign: TextAlign.right,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: 'محدود',
+                      hintText: 'فیلتر',
                       contentPadding: EdgeInsets.all(5.5),
                     ),
                     maxLines: null,
@@ -116,9 +116,9 @@ class _AdminPageState extends State<AdminPage> {
                   flex: 40,
                   child: TextField(
                     style: TextStyle(
-                        color: AppParameters.sentDeliveredMessageForeColor,
+                        //  color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
-                    cursorColor: AppParameters.formsForegroundColor,
+                    cursorColor: AppSettings.formsForegroundColor,
                     textAlign: TextAlign.right,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -301,7 +301,7 @@ class _AdminPageState extends State<AdminPage> {
   TextStyle myStyle() {
     return TextStyle(
       fontSize: 12,
-      color: AppParameters.formsForegroundColor,
+      color: AppSettings.formsForegroundColor,
     );
   }
 

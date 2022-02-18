@@ -12,7 +12,7 @@ class ChatHeader extends AppBar {
     parentContext = context;
     return AppBar(
       brightness: AppSettings.nightMode ? Brightness.dark : Brightness.light,
-      backgroundColor: AppParameters.titlesBackgroundColor,
+      backgroundColor: AppSettings.titlesBackgroundColor,
       leading: Row(
         children: [
           _buttons[0],
@@ -31,7 +31,7 @@ class ChatHeader extends AppBar {
           padding: const EdgeInsets.all(8.0),
           child: isLoading
               ? CircularProgressIndicator(
-                  backgroundColor: AppParameters.titlesForegroundColor,
+                  backgroundColor: AppSettings.titlesForegroundColor,
                   strokeWidth: 4,
                 )
               : _buttons[2],
@@ -57,10 +57,10 @@ class ChatHeader extends AppBar {
                         borderRadius: BorderRadius.circular(10),
                         side: BorderSide(
                             width: 2.0,
-                            color: AppParameters.titlesForegroundColor),
+                            color: AppSettings.titlesForegroundColor),
                       ),
                       elevation: 16,
-                      backgroundColor: AppParameters.titlesBackgroundColor,
+                      backgroundColor: AppSettings.titlesBackgroundColor,
                       child: Container(
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
@@ -79,7 +79,7 @@ class ChatHeader extends AppBar {
           ),
           Text(
             "  " + AppParameters.currentFriendName + "   ",
-            style: TextStyle(color: AppParameters.titlesForegroundColor),
+            style: TextStyle(color: AppSettings.titlesForegroundColor),
 //             + AppParameters.currentFriendId.getL
           ),
         ],

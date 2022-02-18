@@ -1,7 +1,7 @@
 import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
+//import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'AppSettings.dart';
 
@@ -18,11 +18,11 @@ class _TempPageState extends State<TempPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppParameters.formsBackgroundColor,
+      backgroundColor: AppSettings.formsBackgroundColor,
       key: _scaffoldKey,
       appBar: AppBar(
-        backgroundColor: AppParameters.titlesBackgroundColor,
-        foregroundColor: AppParameters.titlesForegroundColor,
+        backgroundColor: AppSettings.titlesBackgroundColor,
+        foregroundColor: AppSettings.titlesForegroundColor,
         brightness: AppSettings.nightMode ? Brightness.dark : Brightness.light,
         actions: [
           IconButton(
@@ -32,7 +32,7 @@ class _TempPageState extends State<TempPage> {
               },
               icon: Icon(Icons.menu)),
           IconButton(
-              color: AppParameters.titlesForegroundColor,
+              color: AppSettings.titlesForegroundColor,
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -46,7 +46,7 @@ class _TempPageState extends State<TempPage> {
           children: [
             Text(strMessage,
                 style: TextStyle(
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +63,7 @@ class _TempPageState extends State<TempPage> {
                         : Icons.wb_sunny_outlined,
                   ),
                   iconSize: 35,
-                  color: AppParameters.titlesForegroundColor,
+                  color: AppSettings.titlesForegroundColor,
                 ),
                 IconButton(
                     onPressed: () {
@@ -95,17 +95,17 @@ class _TempPageState extends State<TempPage> {
                         var key = utf8.encode(strPass);
                         var bytes = utf8.encode(keyPhrase);
 
-                        var hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
-                        var digest = hmacSha256.convert(bytes);
+                        /*  var hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
+                       var digest = hmacSha256.convert(bytes);
                         encrypted = utf8.decode(digest.bytes);
                         print("HMAC digest as bytes: ${digest.bytes}");
                         print("HMAC digest as hex string: $digest");
-                        print("HMAC digest as string: $encrypted");
+                        print("HMAC digest as string: $encrypted");*/
                       });
                     },
                     icon: Icon(Icons.get_app_rounded),
                     iconSize: 35,
-                    color: AppParameters.titlesForegroundColor),
+                    color: AppSettings.titlesForegroundColor),
                 IconButton(
                     onPressed: () {
                       setState(() {
@@ -114,7 +114,7 @@ class _TempPageState extends State<TempPage> {
                     },
                     icon: Icon(Icons.dashboard),
                     iconSize: 35,
-                    color: AppParameters.titlesForegroundColor),
+                    color: AppSettings.titlesForegroundColor),
                 IconButton(
                     onPressed: () {
                       setState(() {
@@ -123,7 +123,7 @@ class _TempPageState extends State<TempPage> {
                     },
                     icon: Icon(Icons.delete),
                     iconSize: 35,
-                    color: AppParameters.titlesForegroundColor),
+                    color: AppSettings.titlesForegroundColor),
               ],
             ),
             _buildList(settings),
@@ -147,7 +147,7 @@ class _TempPageState extends State<TempPage> {
   TextStyle myStyle() {
     return TextStyle(
       fontSize: 12,
-      color: AppParameters.formsForegroundColor,
+      color: AppSettings.formsForegroundColor,
     );
   }
 

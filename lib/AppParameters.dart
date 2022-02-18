@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
+//import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'AppSettings.dart';
+//import 'package:flutter/material.dart';
+//import 'AppSettings.dart';
 
 enum ResultEnums {
   OK_Editted,
@@ -85,72 +85,21 @@ class AppParameters {
 
   static bool chatPageNeedsRefresh = false;
   /*
-   static Color _formsBackgroundClr = Colors.green[100];
-  static Color _formsBackgroundClrNight = Color.fromARGB(255, 51, 27, 6);
-  static Color _formsForegroundClr = Colors.brown[600];
-  static Color _formsForegroundClrNight = Color.fromARGB(255, 247, 228, 179);
-  static Color _titlesBackgroundClr = Colors.green[300];
-  static Color _titlesBackgroundClrNight = Color.fromARGB(255, 26, 14, 4);
-  static Color _titlesForegroundClr = Colors.brown[900];
-  static Color _titlesForegroundClrNight = Color.fromARGB(255, 247, 228, 179);
+   static Color _formsBackColor = Colors.green[100];
+  static Color _formsBackColorNight = Color.fromARGB(255, 51, 27, 6);
+  static Color _formsForeColor = Colors.brown[600];
+  static Color _formsForeColorNight = Color.fromARGB(255, 247, 228, 179);
+  static Color _titlesBackColor = Colors.green[300];
+  static Color _titlesBackColorNight = Color.fromARGB(255, 26, 14, 4);
+  static Color _titlesForeColor = Colors.brown[900];
+  static Color _titlesForeColorNight = Color.fromARGB(255, 247, 228, 179);
   */
-  static Color _formsBackgroundClr = Colors.green[100];
-  static Color _formsBackgroundClrNight = Color.fromARGB(255, 26, 14, 4);
-  static Color _formsForegroundClr = Colors.green[900];
-  static Color _formsForegroundClrNight = Color.fromARGB(255, 247, 228, 179);
-  static Color _titlesBackgroundClr = Colors.green[300];
-  static Color _titlesBackgroundClrNight = Color.fromARGB(255, 51, 27, 6);
-  static Color _titlesForegroundClr = Colors.brown[900];
-  static Color _titlesForegroundClrNight = Color.fromARGB(255, 247, 228, 179);
-
-  static Color _sentMessageBackClr = Color.fromARGB(255, 70, 160, 045);
-  static Color _sentMessageBackClrNight = Color.fromARGB(255, 120, 100, 060);
-  static Color _receivedMessageBackClr = Color.fromARGB(255, 55, 130, 070);
-  static Color _receivedMessageBackClrNight =
-      Color.fromARGB(255, 160, 140, 085);
-
-  static Color chatBackgroundColor = Colors.green[400];
-
-  /*
-  static Color _formsBackgroundClr = Colors.green[100];
-  static Color _formsBackgroundClrNight = Colors.brown[600];
-  static Color _formsForegroundClr = Colors.brown[600];
-  static Color _formsForegroundClrNight = Colors.white;
-  static Color _titlesBackgroundClr = Colors.green[300];
-  static Color _titlesBackgroundClrNight = Colors.brown[900];
-  static Color _titlesForegroundClr = Colors.brown[900];
-  static Color _titlesForegroundClrNight = Colors.green[300];
-  static Color chatBackgroundColor = Colors.green[400];
-*/
-  static set formsBackgroundColor(Color color) => _formsBackgroundClr = color;
-  static get formsBackgroundColor =>
-      AppSettings.nightMode ? _formsBackgroundClrNight : _formsBackgroundClr;
-
-  static set formsForeroundColor(Color color) => _formsForegroundClr = color;
-  static get formsForegroundColor =>
-      AppSettings.nightMode ? _formsForegroundClrNight : _formsForegroundClr;
-
-  static set titlesBackgroundColor(Color color) => _titlesBackgroundClr = color;
-  static get titlesBackgroundColor =>
-      AppSettings.nightMode ? _titlesBackgroundClrNight : _titlesBackgroundClr;
-
-  static set titlesForegroundColor(Color color) => _titlesForegroundClr = color;
-  static get titlesForegroundColor =>
-      AppSettings.nightMode ? _titlesForegroundClrNight : _titlesForegroundClr;
-
-  static get receivedMessageBackColor => AppSettings.nightMode
-      ? _receivedMessageBackClrNight
-      : _receivedMessageBackClr;
-
-  static get sentMessageBackColor =>
-      AppSettings.nightMode ? _sentMessageBackClrNight : _sentMessageBackClr;
-
   static get canSeeLastSeen =>
       AppParameters.currentUser == "akbar" ||
       AppParameters.currentUser == "sohail" ||
       // AppParameters.currentUser == "mahnaz" ||
       AppParameters.currentUser == "sepehr";
-
+/*
 // static Color receivedMessageBackColor = Color.fromARGB(200, 20, 160, 160);
   static Color receivedMessageForeColor = Color.fromARGB(200, 200, 200, 200);
   // static Color sentMessageBackColor = Color.fromARGB(200, 20, 80, 80);
@@ -159,7 +108,7 @@ class AppParameters {
       Color.fromARGB(255, 255, 255, 255);
   static Color messageDateColor = Colors.brown[900];
   //static double messageFontSize = 13;
-
+*/
   //static double messageDateFontSize = 11;
 
   static int messageBufferSize = 100;

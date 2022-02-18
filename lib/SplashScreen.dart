@@ -15,8 +15,8 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 2), () {
-      print("SplashScreen 2 seconds");
+    Future.delayed(Duration(seconds: 1), () {
+      print("SplashScreen 1 seconds");
       initAndGo();
     });
     super.initState();
@@ -26,8 +26,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void initAndGo() async {
     await AppDatabase.initDatabase();
-    //await AppParameters.initialize();
-    await AppSettings.readCurrentSetings();
+    try {
+      await AppSettings.readCurrentSetings();
+    } catch (e) {
+      AppSettings.resetToDefaultSetings();
+    }
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => LoginPage()));
     // context, MaterialPageRoute(builder: (context) => TempPage()));
@@ -37,8 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     currentOrientation = MediaQuery.of(context).orientation;
     return Container(
-        decoration:
-            new BoxDecoration(color: AppParameters.formsBackgroundColor),
+        decoration: new BoxDecoration(color: AppSettings.formsBackgroundColor),
         child: FractionallySizedBox(
           widthFactor: currentOrientation == Orientation.portrait ? 0.7 : 0.4,
           // heightFactor: 0.7,

@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
 import 'AppParameters.dart';
+import 'AppSettings.dart';
 
 class AuthenticatePage extends StatefulWidget {
   @override
@@ -174,7 +175,7 @@ class _AuthenticatePageState extends State<AuthenticatePage> {
           title: const Text('Bio'),
           leading: IconButton(
               icon: Icon(Icons.arrow_back_ios),
-              color: AppParameters.formsForegroundColor,
+              color: AppSettings.formsForegroundColor,
               onPressed: () => {
                     Navigator.pushReplacement(
                         context,

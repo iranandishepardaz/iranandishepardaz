@@ -24,10 +24,10 @@ class MessageEditor {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide(
-                  width: 2.0, color: AppParameters.titlesForegroundColor),
+                  width: 2.0, color: AppSettings.titlesForegroundColor),
             ),
             elevation: 16,
-            backgroundColor: AppParameters.formsBackgroundColor,
+            backgroundColor: AppSettings.formsBackgroundColor,
             child: Container(
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
@@ -57,22 +57,11 @@ class MessageEditor {
                                 ? _inputHeight
                                 : _inputHeight * 2,
                             decoration: BoxDecoration(
-                              color: AppParameters.titlesBackgroundColor,
+                              color: AppSettings.sentMessageBackColor,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(15)),
-                              border: Border(
-                                  top: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  bottom: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  left: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  right: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor)),
+                              border: Border.all(
+                                  color: AppSettings.formsForegroundColor),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,12 +72,12 @@ class MessageEditor {
                                       textDirection: TextDirection.rtl,
                                       child: TextField(
                                         style: TextStyle(
-                                            color: AppParameters
+                                            color: AppSettings
                                                 .titlesForegroundColor,
                                             fontSize: AppSettings
                                                 .messageBodyFontSize),
                                         cursorColor:
-                                            AppParameters.titlesForegroundColor,
+                                            AppSettings.titlesForegroundColor,
                                         cursorHeight:
                                             AppSettings.messageBodyFontSize * 2,
                                         textAlign: TextAlign.right,
@@ -96,7 +85,7 @@ class MessageEditor {
                                           hintText:
                                               'پیام خالی به معنای حذف پیام خواهد بود',
                                           hintStyle: TextStyle(
-                                              color: AppParameters
+                                              color: AppSettings
                                                   .sentMessageForeColor,
                                               fontSize: AppSettings
                                                   .messageBodyFontSize),
@@ -117,22 +106,11 @@ class MessageEditor {
                         Container(
                             height: AppParameters.iconsSize * 1.5,
                             decoration: BoxDecoration(
-                              color: AppParameters.receivedMessageBackColor,
+                              color: AppSettings.receivedMessageBackColor,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(15)),
-                              border: Border(
-                                  top: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  bottom: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  left: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor),
-                                  right: BorderSide(
-                                      color:
-                                          AppParameters.formsForegroundColor)),
+                              border: Border.all(
+                                  color: AppSettings.formsForegroundColor),
                             ),
                             child: Center(
                               child: Column(
@@ -157,8 +135,8 @@ class MessageEditor {
                                                   },
                                                   icon:
                                                       Icon(Icons.edit_outlined),
-                                                  color: AppParameters
-                                                      .formsForegroundColor,
+                                                  color: AppSettings
+                                                      .sentDeliveredMessageForeColor,
                                                 )
                                               : IconButton(
                                                   onPressed: () async {
@@ -170,7 +148,7 @@ class MessageEditor {
                                                         currentContext);
                                                   },
                                                   icon: Icon(Icons.check),
-                                                  color: AppParameters
+                                                  color: AppSettings
                                                       .sentDeliveredMessageForeColor,
                                                 ),
                                           IconButton(
@@ -181,7 +159,7 @@ class MessageEditor {
                                               Navigator.pop(currentContext);
                                             },
                                             icon: Icon(Icons.delete),
-                                            color: AppParameters
+                                            color: AppSettings
                                                 .sentDeliveredMessageForeColor,
                                           ),
                                           IconButton(
@@ -196,7 +174,7 @@ class MessageEditor {
                                               Navigator.pop(currentContext);
                                             },
                                             icon: Icon(Icons.copy),
-                                            color: AppParameters
+                                            color: AppSettings
                                                 .sentDeliveredMessageForeColor,
                                           ),
                                           IconButton(
@@ -206,7 +184,7 @@ class MessageEditor {
                                               Navigator.of(context).pop();
                                             },
                                             icon: Icon(Icons.undo),
-                                            color: AppParameters
+                                            color: AppSettings
                                                 .sentDeliveredMessageForeColor,
                                           ),
                                           /*
@@ -292,24 +270,24 @@ class MessageEditor {
   Future<ResultEnums> deleteMessage() async {
     ResultEnums output = ResultEnums.Unknown;
     AlertDialog dialog = new AlertDialog(
-      backgroundColor: AppParameters.titlesBackgroundColor,
+      backgroundColor: AppSettings.titlesBackgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-            width: 2.0, color: AppParameters.sentDeliveredMessageForeColor),
+            width: 2.0, color: AppSettings.sentDeliveredMessageForeColor),
       ),
       elevation: 16,
       title: Text(
         "از حذف این پیام اطمینان دارید؟",
-        style: TextStyle(color: AppParameters.formsForegroundColor),
+        style: TextStyle(color: AppSettings.formsForegroundColor),
       ),
       content: Container(
         height: 70,
         child: Container(
-          color: AppParameters.formsBackgroundColor,
+          color: AppSettings.formsBackgroundColor,
           child: Container(
             decoration: BoxDecoration(
-                border: Border.all(color: AppParameters.formsForegroundColor),
+                border: Border.all(color: AppSettings.formsForegroundColor),
                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -333,7 +311,7 @@ class MessageEditor {
                     Navigator.of(currentContext).pop();
                   },
                   icon: Icon(Icons.delete_forever),
-                  color: AppParameters.formsForegroundColor,
+                  color: AppSettings.formsForegroundColor,
                 ),
                 IconButton(
                   onPressed: () {
@@ -342,7 +320,7 @@ class MessageEditor {
                   },
                   icon: Icon(
                     Icons.undo,
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                   ),
                 )
               ],

@@ -11,19 +11,19 @@ class OptionsDrawer {
       child: Drawer(
         child: Container(
           width: 180,
-          color: AppParameters.formsBackgroundColor,
+          color: AppSettings.formsBackgroundColor,
           child: ListView(
             children: <Widget>[
               UserAccountsDrawerHeader(
                   decoration: new BoxDecoration(
                     border: new Border.all(
-                        color: AppParameters.titlesBackgroundColor, width: 4),
-                    color: AppParameters.formsBackgroundColor,
+                        color: AppSettings.titlesBackgroundColor, width: 4),
+                    color: AppSettings.formsBackgroundColor,
                   ),
                   accountName: Text(
                     "ApMe Messenger ",
                     style: new TextStyle(
-                      color: AppParameters.formsForegroundColor,
+                      color: AppSettings.formsForegroundColor,
                     ),
                   ),
                   accountEmail: Text(
@@ -32,24 +32,24 @@ class OptionsDrawer {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.center,
                     style: new TextStyle(
-                      color: AppParameters.formsForegroundColor,
+                      color: AppSettings.formsForegroundColor,
                     ),
                   ),
                   currentAccountPicture: CircleAvatar(
                     backgroundImage: AssetImage("assets/apmeLogo.png"),
                   )),
               ListTile(
-                tileColor: AppParameters.formsBackgroundColor,
+                tileColor: AppSettings.formsBackgroundColor,
                 title: Text(
                   "Settings",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                   ),
                 ),
                 leading: Icon(
                   Icons.settings,
-                  color: AppParameters.formsForegroundColor,
+                  color: AppSettings.formsForegroundColor,
                 ),
                 onTap: () {
                   Navigator.of(parent.context).push(
@@ -77,19 +77,19 @@ class OptionsDrawer {
                 },
               ),
               ListTile(
-                tileColor: AppParameters.formsBackgroundColor,
+                tileColor: AppSettings.formsBackgroundColor,
                 title: Text(
                   "تم",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                   ),
                 ),
                 leading: Icon(
                   AppSettings.nightMode
                       ? Icons.nightlight_outlined
                       : Icons.wb_sunny_outlined,
-                  color: AppParameters.formsForegroundColor,
+                  color: AppSettings.formsForegroundColor,
                 ),
                 onTap: () {
                   parent.setState(() {
@@ -101,16 +101,16 @@ class OptionsDrawer {
                 },
               ),
               ListTile(
-                tileColor: AppParameters.formsBackgroundColor,
+                tileColor: AppSettings.formsBackgroundColor,
                 title: Text(
                   "فونت درشت‌تر",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                   ),
                 ),
                 leading: Icon(Icons.arrow_drop_up,
-                    color: AppParameters.formsForegroundColor),
+                    color: AppSettings.formsForegroundColor),
                 onTap: () {
                   parent.setState(() {
                     AppSettings.messageBodyFontSize++;
@@ -124,17 +124,17 @@ class OptionsDrawer {
                 },
               ),
               ListTile(
-                tileColor: AppParameters.formsBackgroundColor,
+                tileColor: AppSettings.formsBackgroundColor,
                 title: Text(
                   "فونت ریزتر",
                   textDirection: TextDirection.rtl,
                   style: new TextStyle(
-                    color: AppParameters.formsForegroundColor,
+                    color: AppSettings.formsForegroundColor,
                   ),
                 ),
                 leading: Icon(
                   Icons.arrow_drop_down,
-                  color: AppParameters.formsForegroundColor,
+                  color: AppSettings.formsForegroundColor,
                 ),
                 onTap: () {
                   parent.setState(() {

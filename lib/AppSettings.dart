@@ -1,9 +1,32 @@
 import 'package:ap_me/ApMeUtils.dart';
 import 'package:ap_me/AppDatabase.dart';
 import 'package:ap_me/AppParameters.dart';
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
+
+extension HexColor on Color {
+  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
+  static Color fromHex(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
+  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
+      '${red.toRadixString(16).padLeft(2, '0')}'
+      '${green.toRadixString(16).padLeft(2, '0')}'
+      '${blue.toRadixString(16).padLeft(2, '0')}'
+      '${alpha.toRadixString(16).padLeft(2, '0')}';
+}
+
+extension ColorHex on Color {
+  String toHexTriplet() =>
+      '#${(value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+}
 
 class AppSettings {
   static const String TableName = "AppSettings";
@@ -24,9 +47,40 @@ class AppSettings {
     await readMessageDateFontSize();
     await readLastLoggedUser();
     await readLastLoggedPassword();
+    await readDisabledForegroundColor();
+    await readFormsBackColor();
+    await readTitlesBackColor();
+    await readFormsForeColor();
+    await readTitlesForeColor();
+    await readReceivedMessageBackColor();
+    await readSentMessageForeColor();
+    await readSentDeliveredMessageForeColor();
+    await readReceivedMessageForeColor();
+    await readSentMessageBackColor();
   }
 
-  static Future addDefaultSetings() async {}
+  static Future resetToDefaultSetings() async {
+    await savefingerFirst(false);
+    await saveNightMode(false);
+    await saveMessageBodyFontSize(defaultMessageBodyFontSize);
+    await saveMessageDateFontSize(defaultMessageDateFontSize);
+    await saveFormsBackColor(defaultFormsBackColor);
+    await saveFormsForeColor(defaultFormsForeColor);
+    await saveTitlesBackColor(defaultTitlesBackColor);
+    await saveTitlesForeColor(defaultTitlesForeColor);
+    await saveReceivedMessageBackColor(defaultReceivedMessageBackColor);
+    await saveSentMessageForeColor(defaultSentMessageForeColor);
+    await saveSentDeliveredMessageForeColor(
+        defaultSentDeliveredMessageForeColor);
+    await saveReceivedMessageForeColor(defaultReceivedMessageForeColor);
+    await saveSentMessageBackColor(defaultSentMessageBackColor);
+    await saveDisabledForegroundColor(defaultDisabledForegroundColor);
+  }
+
+  static Future<void> clearAllAppSettings() async {
+    //var client = await AppDb.db;
+    return await AppDatabase.currentDB.delete(AppSettings.TableName);
+  }
 
   static Future<List<AppSetting>> getAllSettings(int count) async {
     List<AppSetting> output = [];
@@ -105,7 +159,7 @@ class AppSettings {
     return _fingerFirst;
   }
 
-  static double defaultMessageBodyFontSize = 13;
+  static double defaultMessageBodyFontSize = 14;
   static double _messageBodyFontSize;
   static get messageBodyFontSize => _messageBodyFontSize == null
       ? defaultMessageBodyFontSize
@@ -125,7 +179,7 @@ class AppSettings {
     return _messageBodyFontSize;
   }
 
-  static double defaultMessageDateFontSize = 11;
+  static double defaultMessageDateFontSize = 8.5;
   static double _messageDateFontSize;
   static get messageDateFontSize => _messageDateFontSize == null
       ? defaultMessageDateFontSize
@@ -176,12 +230,201 @@ class AppSettings {
     return _lastLoggedPassword;
   }
 
+  static Color defaultSentMessageBackColor = Color.fromARGB(255, 70, 160, 045);
+  static Color _sentMessageBackColor;
+  static get sentMessageBackColor => _sentMessageBackColor == null
+      ? defaultSentMessageBackColor
+      : _sentMessageBackColor;
+  static set sentMessageBackColor(value) => _sentMessageBackColor = value;
+  static saveSentMessageBackColor(Color color) async {
+    _sentMessageBackColor = color;
+    await saveSetting("sentMessageBackColor",
+        '#${_sentMessageBackColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readSentMessageBackColor() async {
+    _sentMessageBackColor =
+        HexColor.fromHex(await getSettingValue("sentMessageBackColor"));
+    return _sentMessageBackColor;
+  }
+
+  static Color defaultReceivedMessageBackColor =
+      Color.fromARGB(255, 55, 130, 070);
+  static Color _receivedMessageBackColor;
+  static get receivedMessageBackColor => _receivedMessageBackColor == null
+      ? defaultReceivedMessageBackColor
+      : _receivedMessageBackColor;
+  static set receivedMessageBackColor(value) =>
+      _receivedMessageBackColor = value;
+  static saveReceivedMessageBackColor(Color color) async {
+    _receivedMessageBackColor = color;
+    await saveSetting("receivedMessageBackColor",
+        '#${_receivedMessageBackColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readReceivedMessageBackColor() async {
+    _receivedMessageBackColor =
+        HexColor.fromHex(await getSettingValue("receivedMessageBackColor"));
+    return _receivedMessageBackColor;
+  }
+
+  static Color defaultSentMessageForeColor = Color.fromARGB(255, 120, 100, 060);
+  static Color _sentMessageForeColor;
+  static get sentMessageForeColor => _sentMessageForeColor == null
+      ? defaultSentMessageForeColor
+      : _sentMessageForeColor;
+  static set sentMessageForeColor(value) => _sentMessageForeColor = value;
+  static saveSentMessageForeColor(Color color) async {
+    _sentMessageForeColor = color;
+    await saveSetting("sentMessageForeColor",
+        '#${_sentMessageForeColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readSentMessageForeColor() async {
+    _sentMessageForeColor =
+        HexColor.fromHex(await getSettingValue("sentMessageForeColor"));
+    return _sentMessageForeColor;
+  }
+
+  static Color defaultSentDeliveredMessageForeColor =
+      Color.fromARGB(200, 200, 200, 200);
+  static Color _sentDeliveredMessageForeColor;
+  static get sentDeliveredMessageForeColor =>
+      _sentDeliveredMessageForeColor == null
+          ? defaultSentDeliveredMessageForeColor
+          : _sentDeliveredMessageForeColor;
+  static set sentDeliveredMessageForeColor(value) =>
+      _sentDeliveredMessageForeColor = value;
+  static saveSentDeliveredMessageForeColor(Color color) async {
+    _sentDeliveredMessageForeColor = color;
+    await saveSetting("sentDeliveredMessageForeColor",
+        '#${_sentDeliveredMessageForeColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readSentDeliveredMessageForeColor() async {
+    _sentDeliveredMessageForeColor = HexColor.fromHex(
+        await getSettingValue("sentDeliveredMessageForeColor"));
+    return _sentDeliveredMessageForeColor;
+  }
+
+  static Color defaultReceivedMessageForeColor =
+      Color.fromARGB(200, 200, 200, 200);
+  static Color _receivedMessageForeColor;
+  static get receivedMessageForeColor => _receivedMessageForeColor == null
+      ? defaultReceivedMessageForeColor
+      : _receivedMessageForeColor;
+  static set receivedMessageForeColor(value) =>
+      _receivedMessageForeColor = value;
+  static saveReceivedMessageForeColor(Color color) async {
+    _receivedMessageForeColor = color;
+    await saveSetting("receivedMessageForeColor",
+        '#${_receivedMessageForeColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readReceivedMessageForeColor() async {
+    _receivedMessageForeColor =
+        HexColor.fromHex(await getSettingValue("receivedMessageForeColor"));
+    return _receivedMessageForeColor;
+  }
+
+  static Color defaultFormsBackColor = Colors.green[100];
+  static Color _formsBackgroundColor;
+  static get formsBackgroundColor => _formsBackgroundColor == null
+      ? defaultFormsBackColor
+      : _formsBackgroundColor;
+  static set formsBackgroundColor(value) => _formsBackgroundColor = value;
+  static saveFormsBackColor(Color color) async {
+    _formsBackgroundColor = color;
+    await saveSetting("formsBackgroundColor",
+        '#${_formsBackgroundColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readFormsBackColor() async {
+    _formsBackgroundColor =
+        HexColor.fromHex(await getSettingValue("formsBackgroundColor"));
+    return _formsBackgroundColor;
+  }
+
+  static Color defaultFormsForeColor = Colors.green[900];
+  static Color _formsForegroundColor;
+  static get formsForegroundColor => _formsForegroundColor == null
+      ? defaultFormsForeColor
+      : _formsForegroundColor;
+  static set formsForegroundColor(value) => _formsForegroundColor = value;
+  static saveFormsForeColor(Color color) async {
+    _formsForegroundColor = color;
+    await saveSetting("formsForegroundColor",
+        '#${_formsForegroundColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readFormsForeColor() async {
+    _formsForegroundColor =
+        HexColor.fromHex(await getSettingValue("formsForegroundColor"));
+    return _formsForegroundColor;
+  }
+
+  static Color defaultTitlesBackColor = Colors.green[300];
+  static Color _titlesBackgroundColor;
+  static get titlesBackgroundColor => _titlesBackgroundColor == null
+      ? defaultTitlesBackColor
+      : _titlesBackgroundColor;
+  static set titlesBackgroundColor(value) => _titlesBackgroundColor = value;
+  static saveTitlesBackColor(Color color) async {
+    _titlesBackgroundColor = color;
+    await saveSetting("titlesBackgroundColor",
+        '#${_titlesBackgroundColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readTitlesBackColor() async {
+    _titlesBackgroundColor =
+        HexColor.fromHex(await getSettingValue("titlesBackgroundColor"));
+    return _titlesBackgroundColor;
+  }
+
+  static Color defaultTitlesForeColor = Colors.green[900];
+  static Color _titlesForegroundColor;
+  static get titlesForegroundColor => _titlesForegroundColor == null
+      ? defaultTitlesForeColor
+      : _titlesForegroundColor;
+  static set titlesForegroundColor(value) => _titlesForegroundColor = value;
+  static saveTitlesForeColor(Color color) async {
+    _titlesForegroundColor = color;
+    await saveSetting("titlesForegroundColor",
+        '#${_titlesForegroundColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readTitlesForeColor() async {
+    _titlesForegroundColor =
+        HexColor.fromHex(await getSettingValue("titlesForegroundColor"));
+    return _titlesForegroundColor;
+  }
+
+  static Color defaultDisabledForegroundColor =
+      Color.fromARGB(255, 220, 220, 220);
+  static Color _disabledForegroundColor;
+  static get disabledForegroundColor => _disabledForegroundColor == null
+      ? defaultDisabledForegroundColor
+      : _disabledForegroundColor;
+  static set disabledForegroundColor(value) => _disabledForegroundColor = value;
+  static saveDisabledForegroundColor(Color color) async {
+    _disabledForegroundColor = color;
+    await saveSetting("disabledForegroundColor",
+        '#${_disabledForegroundColor.value.toRadixString(16)}');
+  }
+
+  static Future<Color> readDisabledForegroundColor() async {
+    _disabledForegroundColor =
+        HexColor.fromHex(await getSettingValue("disabledForegroundColor"));
+    return _disabledForegroundColor;
+  }
+
   static get messageEditStyle => TextStyle(
-      backgroundColor: AppParameters.titlesBackgroundColor,
-      color: AppParameters.titlesForegroundColor,
+      backgroundColor: AppSettings.titlesBackgroundColor,
+      color: AppSettings.titlesForegroundColor,
       fontSize: messageBodyFontSize);
 }
 
+/*
 class AppSettingsBack {
   static Future<List<AppSetting>> getAllSettings(int count) async {
     //var client = await AppDb.db;
@@ -201,10 +444,6 @@ class AppSettingsBack {
         .rawQuery('SELECT COUNT(*) FROM ' + AppSettings.TableName));
   }
 
-  static Future<void> clearAllAppSettings() async {
-    //var client = await AppDb.db;
-    return await AppDatabase.currentDB.delete(AppSettings.TableName);
-  }
 
   static Future<String> getSettingValue(String settingName) async {
     String outPut = "";
@@ -448,6 +687,7 @@ static bool _nMode;
   }*/
 
 }
+*/
 
 class AppSetting {
   @required
@@ -532,4 +772,8 @@ class AppSetting {
     //var client = await AppDb.db;
     await AppDatabase.currentDB.close();
   }
+}
+
+class ColorSetting extends AppSetting {
+  Color defaultColor = Colors.white;
 }

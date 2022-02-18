@@ -41,7 +41,7 @@ class _MessageBubbleFullState extends State<MessageBubbleFull> {
                 : "Does not sent!",
             style: TextStyle(
                 fontSize: AppSettings.messageDateFontSize,
-                color: AppParameters.formsForegroundColor),
+                color: AppSettings.formsForegroundColor),
           ),
           Visibility(
             visible: widget.currentMessage.messageType == 1,

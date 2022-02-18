@@ -45,7 +45,7 @@ class AppDatabase {
     print("ShortMessages Table Created");
     await db.execute(AppSettings.tableCreator());
     print("AppSettings Table Created");
-    await AppSettings.addDefaultSetings();
+    await AppSettings.resetToDefaultSetings();
   }
 
   static void _onUpgrade(Database db, int oldVersion, int newVersion) async {
