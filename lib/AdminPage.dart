@@ -97,7 +97,7 @@ class _AdminPageState extends State<AdminPage> {
                   flex: 30,
                   child: TextField(
                     style: TextStyle(
-                        //color: AppSettings.formsForegroundColor,
+                        color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppSettings.formsForegroundColor,
                     textAlign: TextAlign.right,
@@ -116,7 +116,7 @@ class _AdminPageState extends State<AdminPage> {
                   flex: 40,
                   child: TextField(
                     style: TextStyle(
-                        //  color: AppSettings.formsForegroundColor,
+                        color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppSettings.formsForegroundColor,
                     textAlign: TextAlign.right,

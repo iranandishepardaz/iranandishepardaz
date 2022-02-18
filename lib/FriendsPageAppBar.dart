@@ -69,6 +69,9 @@ class FriendsAppBar {
                   NetworkImage(AppParameters.currentUserAvatarUrl()),
             ),
           ),
+          SizedBox(
+            width: 10,
+          ),
           Text(
             // AppParameters.prefix +
             //    " " +

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:ap_me/ApcoMessageBox.dart';
 import 'package:ap_me/ChatHeader.dart';
+import 'package:ap_me/ChatPageAppBar.dart';
 import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:ap_me/MessageBubble.dart';
 import 'package:ap_me/MessageEditor.dart';
@@ -85,7 +86,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             actions: <Widget>[
               new TextButton(
                 // onPressed: () => Navigator.of(context).pop(false),
-                onPressed: goBackToFriendsPage,
+                onPressed: backToFriendsPage,
                 child: new Text('No'),
               ),
               new TextButton(
@@ -99,7 +100,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   Future<bool> _onWillPopSimple() async {
-    goBackToFriendsPage();
+    backToFriendsPage();
     return false;
   }
 
@@ -117,41 +118,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             return Future.delayed(Duration(seconds: 2), () {});
           },
           child: Scaffold(
-            appBar: ChatHeader().chatBar([
-              IconButton(
-                  icon: Icon(Icons.arrow_back_ios,
-                      color: AppSettings.titlesForegroundColor),
-                  onPressed: () {
-                    goBackToFriendsPage();
-                  }),
-              IconButton(
-                color: AppSettings.titlesForegroundColor,
-                onPressed: () {
-                  _scrollController.animateTo(
-                    0,
-                    duration: Duration(seconds: 2),
-                    curve: Curves.fastOutSlowIn,
-                  );
-                  // _scrollController.animateTo(
-                  //   _scrollController.position.minScrollExtent,
-                  //   duration: Duration(seconds: 2),
-                  //   curve: Curves.fastOutSlowIn,
-                  //);
-                },
-                icon: Icon(Icons.arrow_downward_sharp),
-              ),
-              IconButton(
-                //color: AppSettings.titlesForegroundColor,
-                color: AppParameters.networkOK
-                    ? AppSettings.titlesForegroundColor
-                    : Colors.red,
-                onPressed: () {
-                  // getMessages(true);
-                  getUnsynced();
-                },
-                icon: Icon(Icons.cloud_download),
-              ),
-            ], isLoading, this.context),
+            appBar: ChatAppBar(this).appBar(),
             body: SafeArea(
                 child: Container(
               color: AppSettings.formsBackgroundColor,
@@ -823,10 +790,22 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 
-  void goBackToFriendsPage() {
+  void backToFriendsPage() {
     Navigator.of(context).pop();
   }
 
+  void scrollToLastMessage() {
+    _scrollController.animateTo(
+      0,
+      duration: Duration(seconds: 2),
+      curve: Curves.fastOutSlowIn,
+    );
+    // _scrollController.animateTo(
+    //   _scrollController.position.minScrollExtent,
+    //   duration: Duration(seconds: 2),
+    //   curve: Curves.fastOutSlowIn,
+    //);
+  }
   /*void sendFileMessage() {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => UploadFile()));
