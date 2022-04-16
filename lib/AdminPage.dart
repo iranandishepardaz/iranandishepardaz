@@ -82,7 +82,7 @@ class _AdminPageState extends State<AdminPage> {
                         color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppSettings.formsForegroundColor,
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.center,
                     decoration: InputDecoration(
                       hintText: 'پیام',
                       contentPadding: EdgeInsets.all(5.5),
@@ -100,7 +100,7 @@ class _AdminPageState extends State<AdminPage> {
                         color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppSettings.formsForegroundColor,
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       hintText: 'فیلتر',
@@ -119,7 +119,7 @@ class _AdminPageState extends State<AdminPage> {
                         color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize),
                     cursorColor: AppSettings.formsForegroundColor,
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       hintText: 'تعداد',

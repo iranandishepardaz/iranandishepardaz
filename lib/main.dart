@@ -1,8 +1,9 @@
 //import 'package:ap_me/LoginPage.dart';
 //import 'package:ap_me/MainPage.dart';
-import 'package:ap_me/Login.dart';
+import 'package:ap_me/AppParameters.dart';
 import 'package:ap_me/SplashScreen.dart';
 import 'package:flutter/material.dart';
+
 /*
 void main() {
   runApp(MaterialApp(
@@ -19,7 +20,7 @@ Future<void> main() async {
 }
 
 //  void main() => runApp(new ApMesApplication());
-
+/*
 class ApMesApplication extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,5 +29,31 @@ class ApMesApplication extends StatelessWidget {
         theme: new ThemeData(
             primarySwatch: Colors.grey, scaffoldBackgroundColor: Colors.grey),
         home: SplashScreen());
+  }
+}
+*/
+
+class ApMesApplication extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _resetTimer('down'),
+      onPointerMove: (_) => _resetTimer('move'),
+      onPointerUp: (_) => _resetTimer('up'),
+      onPointerSignal: (_) => _resetTimer('Signal'),
+      child: MaterialApp(
+        theme: new ThemeData(
+            primarySwatch: Colors.grey, scaffoldBackgroundColor: Colors.grey),
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen(),
+      ),
+    );
+  }
+}
+
+void _resetTimer(String userAction) {
+  print(userAction);
+  if (userAction == "down") {
+    AppParameters.lastUserActivity = DateTime.now();
   }
 }

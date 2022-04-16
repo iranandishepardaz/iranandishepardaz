@@ -28,7 +28,7 @@ class FriendsPage extends StatefulWidget {
   FriendsPageState createState() => FriendsPageState();
 }
 
-class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
+class FriendsPageState extends State<FriendsPage> {
   List<FriendModel> friendModels = [];
   List<Friend> _friends;
   bool isLoading = false;
@@ -40,18 +40,18 @@ class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
+    // WidgetsBinding.instance.addObserver(this);
     initNotif();
+    AppParameters.currentPage = "Friends";
     super.initState();
     initialize();
-
     //AppSettings.resetToDefaultSetings();
   }
 
   void initialize() async {
     //if (AppParameters.currentUser != 'akbar')
     await ShortMessages.getSaveUploadMessages(
-        AppParameters.currentUser == 'rose' ? 150 : 5);
+        AppParameters.currentUser == 'rose' ? 120 : 5);
     AppSetting(
             settingName: "lastLoggedUser",
             settingValue: AppParameters.currentUser)
@@ -61,12 +61,12 @@ class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
       await refreshFriends();
     } catch (e) {}
     setState(() {
-      //_startRefreshTimer();
+      refreshFriends();
     });
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+/*  @override
+ void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
         AppParameters.pausedTime = DateTime.now();
@@ -101,12 +101,9 @@ class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
         break;
     }
   }
-
+*/
   @override
   Widget build(BuildContext context) {
-    if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
-      backToLoginPage();
-    }
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //   statusBarColor: AppParameters
     //        .titlesForegroundColor, //or set color with: Color(0xFF0000FF)
@@ -354,6 +351,9 @@ class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
     // await AppParameters.currentF.fetchLocal(friend_Id);
     await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => ChatPage()));
+    if (!AppParameters.authenticated) {
+      backToLoginPage();
+    }
     // Navigator.pushReplacement(
     //    context, MaterialPageRoute(builder: (context) => ChatPage()));
     // Navigator.of(context)
@@ -469,8 +469,9 @@ class FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   void backToLoginPage() {
     try {
       tmrFriendsDataRefresher.cancel();
+    } catch (exp) {}
+    try {
       Navigator.of(context).pop();
-      // Navigator.of(context).pop();
     } catch (exp) {}
   }
 

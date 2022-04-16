@@ -97,6 +97,8 @@ class LoginDialog {
                             color: Colors.red[400],
                             child: InkWell(
                               onTap: () async {
+                                txtUserNameController.text =
+                                    txtUserNameController.text.trim();
                                 if (txtUserNameController.text == "admin" &&
                                     txtPasswordController.text == "470125") {
                                   await Navigator.of(context).push(

@@ -10,8 +10,11 @@ enum ResultEnums {
   OK_Deletted,
   OK_MarkedDeleted,
   Error_Deletting,
-  Cancelled,
   Copied_to_Clipboard,
+  OK,
+  Yes,
+  No,
+  Cancelled,
   Unknown
 }
 ResultEnums valueOf(String value) {
@@ -47,6 +50,8 @@ class AppParameters {
   static String currentPassword = "";
   static String currentFriendId = "";
   static String currentFriendName = "";
+  static String currentPage = "";
+  static DateTime lastUserActivity = DateTime.now();
   // static String lastLoggedUser = "";
   // static String lastLoggedPassword = "";
 
@@ -78,7 +83,8 @@ class AppParameters {
   static const messageRefreshPeriod = const Duration(seconds: 20);
   static const friendsRefreshPeriod = const Duration(seconds: 59);
   static const saveSMSPeriod = const Duration(minutes: 20);
-  static const pausePermittedSeconds = 300;
+  static var pausePermittedSeconds = 100;
+  static var authenticated = false;
   static DateTime pausedTime = DateTime.now();
   static int pausedSeconds = 0;
   static int lastSeconds = 0;

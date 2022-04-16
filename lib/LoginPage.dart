@@ -1,6 +1,7 @@
 import 'package:ap_me/AppSettings.dart';
 import 'package:ap_me/FriendsPage.dart';
 import 'package:flutter/services.dart';
+import 'package:local_auth/auth_strings.dart';
 
 import 'ApMeUtils.dart';
 import 'AppParameters.dart';
@@ -9,13 +10,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:get_version/get_version.dart';
+import 'package:async/async.dart';
 
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final txtUserNameController = TextEditingController();
   final txtPasswordController = TextEditingController();
   String formMessage = "...";
@@ -25,7 +27,81 @@ class _LoginPageState extends State<LoginPage> {
   String _autherized = "Not Autherized";
   LocalAuthentication auth = LocalAuthentication();
 
+  @override
+  void initState() {
+    txtUserNameController.text = AppSettings.lastLoggedUser;
+    _checkBiometrics();
+    _getAvailableBiometric();
+    _getVer();
+    //passwordController.text = AppParameters.currentPassword;
+    if (AppSettings.fingerFirst) _authenticate();
+    AppParameters.currentPage = "Login";
+    WidgetsBinding.instance.addObserver(this);
+    _masterTimer = new RestartableTimer(Duration(seconds: 10), _userActvityWD);
+    super.initState();
+  }
+
+  RestartableTimer _masterTimer;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+        AppParameters.pausedTime = DateTime.now();
+        print("Login Page status: paused");
+        break;
+      case AppLifecycleState.resumed:
+        print("Login Page status: resumed");
+        AppParameters.pausedSeconds =
+            DateTime.now().difference(AppParameters.pausedTime).inSeconds;
+        AppParameters.pausedTime = DateTime.now();
+        //// must remove
+        // AppParameters.pausePermittedSeconds = 10;
+        ////
+        if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
+          _userActvityWD();
+        } else {}
+        break;
+      case AppLifecycleState.inactive:
+        print("Login Page status: inacivated");
+        break;
+      case AppLifecycleState.detached:
+        print("Login Page status: detached");
+        break;
+    }
+  }
+
+  void _userActvityWD() {
+    AppParameters.pausedSeconds =
+        DateTime.now().difference(AppParameters.lastUserActivity).inSeconds;
+    _masterTimer.reset();
+    if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
+      AppParameters.authenticated = false;
+      try {
+        if (AppParameters.currentPage == "Chat" ||
+            AppParameters.currentPage == "Friends") {
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        SystemNavigator.pop();
+      }
+    }
+    /* AppParameters.authenticated = false;
+     try {
+      if (AppParameters.currentPage == "Chat") {
+        Navigator.pop(context);
+        Navigator.pop(context);
+      }
+      if (AppParameters.currentPage == "Friends") {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      SystemNavigator.pop();
+    }*/
+  }
+
   Future<void> _checkBiometrics() async {
+    //AppParameters.pausePermittedSeconds = 10;
     bool canCheckBiometric = false;
     try {
       canCheckBiometric = await auth.canCheckBiometrics;
@@ -63,10 +139,17 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _authenticate() async {
     bool authenticated = false;
+    AndroidAuthMessages androidAuthMessages = new AndroidAuthMessages(
+        signInTitle: "ApMe",
+        cancelButton: "انصراف",
+        fingerprintHint: "حسگر را لمس کنید",
+        fingerprintNotRecognized: "شناسایی انجام نشد",
+        fingerprintSuccess: "شناسایی انجام شد");
     try {
       authenticated = await auth.authenticateWithBiometrics(
-          localizedReason: "حسگر را لمس کنید",
+          localizedReason: "ورود به برنامه",
           useErrorDialogs: true,
+          androidAuthStrings: androidAuthMessages,
           stickyAuth: false);
     } on PlatformException catch (e) {
       print(e);
@@ -83,20 +166,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  void initState() {
-    txtUserNameController.text = AppSettings.lastLoggedUser;
-    _checkBiometrics();
-    _getAvailableBiometric();
-    _getVer();
-    //passwordController.text = AppParameters.currentPassword;
-    if (AppSettings.fingerFirst) _authenticate();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-
     return Scaffold(
       backgroundColor: AppSettings.formsBackgroundColor,
       body: Center(
@@ -312,23 +383,26 @@ class _LoginPageState extends State<LoginPage> {
             " " +
             AppParameters.lastName +
             " خوش آمدید";
+
+        AppParameters.authenticated = true;
+        AppParameters.pausedSeconds = 0;
+        AppParameters.lastUserActivity = DateTime.now();
         Future.delayed(const Duration(seconds: 1), () async {
           AppSettings.saveLastLoggedUser(AppParameters.currentUser);
           AppSettings.saveLastLoggedPassword(AppParameters.currentPassword);
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
+          AppParameters.currentPage = "Login";
+          setState(() {
+            formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
+          });
           if (AppSettings.fingerFirst) _authenticate();
-          formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
         });
       } else {
         if (result[0] == "-1") formMessage = "نام کاربری یا گذرواژه درست نیست";
         if (result[0] == "-2") formMessage = "دسترسی به اینترنت را چک کنید";
         if (result[0] == "-3")
           formMessage = "نام کاربری و رمز عبور باید از 4 حرف بیشتر باشد";
-        /*  Future.delayed(const Duration(seconds: 2), () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => LifecycleWatcher()));
-        });*/
       }
     });
   }

@@ -43,6 +43,7 @@ class AppSettings {
   static Future readCurrentSetings() async {
     await readFingerFirst();
     await readNightMode();
+    await readPermittedIdleSeconds();
     await readMessageBodyFontSize();
     await readMessageDateFontSize();
     await readLastLoggedUser();
@@ -62,6 +63,7 @@ class AppSettings {
   static Future resetToDefaultSetings() async {
     await savefingerFirst(false);
     await saveNightMode(false);
+    await savePermittedIdleSeconds(defaultPermittedIdleSeconds);
     await saveMessageBodyFontSize(defaultMessageBodyFontSize);
     await saveMessageDateFontSize(defaultMessageDateFontSize);
     await saveFormsBackColor(defaultFormsBackColor);
@@ -157,6 +159,26 @@ class AppSettings {
   static Future<bool> readFingerFirst() async {
     _fingerFirst = stringToBoolean(await getSettingValue("fingerFirst"));
     return _fingerFirst;
+  }
+
+  static double defaultPermittedIdleSeconds = 100;
+  static double _permittedIdleSeconds;
+  static get permittedIdleSeconds => _permittedIdleSeconds == null
+      ? defaultPermittedIdleSeconds
+      : _permittedIdleSeconds;
+  static set permittedIdleSeconds(value) => _permittedIdleSeconds = value;
+  static savePermittedIdleSeconds(double msgFontSize) async {
+    _permittedIdleSeconds = msgFontSize;
+    await saveSetting("permittedIdleSeconds", msgFontSize.toString());
+  }
+
+  static Future<double> readPermittedIdleSeconds() async {
+    _permittedIdleSeconds = defaultPermittedIdleSeconds;
+    try {
+      _permittedIdleSeconds =
+          double.parse(await getSettingValue("permittedIdleSeconds"));
+    } catch (e) {}
+    return _permittedIdleSeconds;
   }
 
   static double defaultMessageBodyFontSize = 14;

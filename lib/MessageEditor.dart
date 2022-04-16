@@ -1,3 +1,4 @@
+import 'package:ap_me/ApcoUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'AdminPage.dart';
@@ -268,6 +269,31 @@ class MessageEditor {
   }
 
   Future<ResultEnums> deleteMessage() async {
+    ResultEnums output = await ApUtils.apcoShowDialog(
+        currentContext, "آیا از حذف این پیام اطمینان دارید؟",
+        yesKeyText: "آری");
+    if (output == ResultEnums.Yes) {
+      ApMeMessage messageToDelete =
+          await ApMeMessages.deleteMessage(currentMessage);
+
+      if (messageToDelete != null) {
+        if (messageToDelete.deleted == 0) {
+          await messageToDelete.delete();
+          output = ResultEnums.OK_Deletted;
+        } else {
+          await messageToDelete.update();
+          output = ResultEnums.OK_MarkedDeleted;
+        }
+      } else {
+        output = ResultEnums.Error_Deletting;
+      }
+    } else if (output == ResultEnums.No) {
+      output = ResultEnums.Cancelled;
+    }
+    return output;
+  }
+
+  Future<ResultEnums> deleteMessage1() async {
     ResultEnums output = ResultEnums.Unknown;
     AlertDialog dialog = new AlertDialog(
       backgroundColor: AppSettings.titlesBackgroundColor,
@@ -279,12 +305,16 @@ class MessageEditor {
       elevation: 16,
       title: Text(
         "از حذف این پیام اطمینان دارید؟",
-        style: TextStyle(color: AppSettings.formsForegroundColor),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: AppSettings.titlesForegroundColor,
+            backgroundColor: AppSettings.titlesBackgroundColor,
+            fontSize: AppSettings.messageBodyFontSize * 1.2),
       ),
       content: Container(
         height: 70,
         child: Container(
-          color: AppSettings.formsBackgroundColor,
+          color: AppSettings.titlesBackgroundColor,
           child: Container(
             decoration: BoxDecoration(
                 border: Border.all(color: AppSettings.formsForegroundColor),
@@ -292,7 +322,55 @@ class MessageEditor {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                Material(
+                  elevation: 20,
+                  borderRadius: BorderRadius.circular(40),
+                  color: AppSettings.formsBackgroundColor,
+                  child: InkWell(
+                    onTap: () async {
+                      Navigator.of(currentContext).pop();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 80,
+                      child: Center(
+                        child: Text(
+                          "بلی",
+                          style: TextStyle(
+                              fontFamily: "Vazir",
+                              color: AppSettings.formsForegroundColor,
+                              fontSize: AppSettings.messageBodyFontSize * 1.2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Material(
+                  elevation: 20,
+                  borderRadius: BorderRadius.circular(40),
+                  color: AppSettings.formsBackgroundColor,
+                  child: InkWell(
+                    onTap: () async {
+                      Navigator.of(currentContext).pop();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 80,
+                      child: Center(
+                        child: Text(
+                          "خیر",
+                          style: TextStyle(
+                              fontFamily: "Vazir",
+                              color: AppSettings.formsForegroundColor,
+                              fontSize: AppSettings.messageBodyFontSize * 1.2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 IconButton(
+                  icon: Icon(Icons.delete_forever),
+                  color: AppSettings.formsForegroundColor,
                   onPressed: () async {
                     ApMeMessage messageToDelete =
                         await ApMeMessages.deleteMessage(currentMessage);
@@ -310,8 +388,6 @@ class MessageEditor {
                     }
                     Navigator.of(currentContext).pop();
                   },
-                  icon: Icon(Icons.delete_forever),
-                  color: AppSettings.formsForegroundColor,
                 ),
                 IconButton(
                   onPressed: () {

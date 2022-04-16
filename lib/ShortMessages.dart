@@ -32,8 +32,6 @@ class ShortMessages {
       //filter Inbox, sent or draft messages
       count: count, //number of sms to read
       // address: "09373792580",
-      //address: "+989308421948",
-      //address: "+989908699882",
     );
     return allMessages;
   }

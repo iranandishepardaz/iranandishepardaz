@@ -10,11 +10,11 @@ import 'package:ap_me/MessageBubble.dart';
 import 'package:ap_me/MessageEditor.dart';
 import 'package:ap_me/TempMessages.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'AppParameters.dart';
 import 'package:flutter/material.dart';
 import 'ApMeMessages.dart';
 import 'AppSettings.dart';
-import 'OptionsDrawer.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChatPage extends StatefulWidget {
@@ -41,7 +41,6 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   bool isEditing = false;
   bool canSendImage =
       false; // AppParameters.currentUser == 'akbar' || AppParameters.currentUser == 'sepehr';
-
   @override
   void initState() {
     super.initState();
@@ -50,33 +49,40 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     allMessages = [];
     generateBubbles();
     _startTimer();
+    AppParameters.currentPage = "Chat";
     WidgetsBinding.instance.addObserver(this);
     messageBodyTextController.addListener(_adjustMessageBodyTextField);
   }
 
+/*
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
-        AppParameters.pausedTime = DateTime.now();
+        //   AppParameters.pausedTime = DateTime.now();
+        print("Chat Page status: paused");
         break;
       case AppLifecycleState.resumed:
+        print("Chat Page status: resumed");
         AppParameters.pausedSeconds =
             DateTime.now().difference(AppParameters.pausedTime).inSeconds;
-        if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
-          Navigator.of(context).pop();
-        } else {
+        AppParameters.pausedTime = DateTime.now();
+        if (AppParameters.pausedSeconds < AppParameters.pausePermittedSeconds) {
           isLoading = false;
           _startTimer();
         }
         break;
       case AppLifecycleState.inactive:
+        print("Chat Page status: inacivated");
         tmrChatPageDataRefresher.cancel();
         break;
       case AppLifecycleState.detached:
+        print("Chat Page status: detached");
+        tmrChatPageDataRefresher.cancel();
+        break;
     }
   }
-
+*/
   Future<bool> _onWillPop() async {
     return (await showDialog(
           context: context,
@@ -90,7 +96,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                 child: new Text('No'),
               ),
               new TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: () => backToFriendsPage(),
                 child: new Text('Yes'),
               ),
             ],
@@ -104,10 +110,19 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     return false;
   }
 
+  void backToFriendsPage() {
+    try {
+      tmrChatPageDataRefresher.cancel();
+    } catch (exp) {}
+    try {
+      Navigator.of(context).pop();
+    } catch (exp) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
-      Navigator.of(context).pop();
+      backToFriendsPage();
     }
     return WillPopScope(
       onWillPop: _onWillPopSimple,
@@ -367,7 +382,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
     var newHeight = lines * AppSettings.messageBodyFontSize +
         (AppSettings.messageBodyFontSize * 0.75);
-    if (_inputHeight != newHeight)
+    if (_inputHeight != newHeight || charCount > 100)
       setState(() {
         _inputHeight = newHeight;
       });
@@ -425,19 +440,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           strValue = "";
           break;
       }
-      if (strValue.length > 0)
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: AppSettings.titlesBackgroundColor,
-          content: Container(
-            child: Text(
-              strValue,
-              style: TextStyle(
-                color: AppSettings.formsForegroundColor,
-              ),
-            ),
-          ),
-          duration: Duration(seconds: 2),
-        ));
+      if (strValue.length > 0) showSnackMessage(strValue);
+
       /*if (value.toString() == "OK Editted") {
         setState(() {
           result = "ویرایش شد";
@@ -498,9 +502,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         Timer.periodic(AppParameters.friendsRefreshPeriod, (timer) async {
       if (isLoading) {
         print(
-            DateTime.now().toString() + "The Chat page Refreshing cancelled.");
+            DateTime.now().toString() + " The Chat page Refreshing cancelled.");
       } else {
-        print(DateTime.now().toString() + "The Chat page Refreshing...");
+        print(DateTime.now().toString() + " The Chat page Refreshing...");
         getUnsynced();
       }
       //await getMessages(true);
@@ -516,6 +520,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     //if (unsynedMessages.length > 0) {
     allMessages =
         await ApMeMessages.getLocalFriendMessages(messagesToShowCount);
+
     /* for (int i = 0; i < unsynedMessages.length; i++) {
         messages.add(unsynedMessages[i]);
       }*/
@@ -598,7 +603,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 */
-
+/*
   final SnackBar snackBar = SnackBar(
     content: const Text("Init"),
     action: SnackBarAction(
@@ -608,7 +613,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       },
     ),
   );
-
+*/
   Future<void> generateBubbles() async {
     allMessages =
         await ApMeMessages.getLocalFriendMessages(messagesToShowCount);
@@ -651,8 +656,19 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void showSnackMessage(String messageToShow) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(messageToShow),
+      behavior: SnackBarBehavior.floating,
+      content: Text(
+        messageToShow,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: AppSettings.messageBodyFontSize,
+        ),
+      ),
       duration: Duration(seconds: 1),
+      backgroundColor: AppSettings.titlesBackgroundColor,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppSettings.titlesForegroundColor)),
     ));
     setState(() {});
   }
@@ -668,19 +684,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
     if (deletedMessage != null) {
       allMessageBubbles[currentBubbleId].currentMessage.delete();
-      setState(() {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("حذف شد!"),
-          duration: Duration(seconds: 3),
-        ));
-      });
-
-      //this._showToast(context);
+      showSnackMessage("حذف شد!");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("قابل حذف نیست!"),
-        duration: Duration(seconds: 3),
-      ));
+      showSnackMessage("قابل حذف نیست!");
     }
     isLoading = false;
     return true;
@@ -702,7 +708,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       generateBubbles();
       messageSent = true;
     } else {
-      //textToSend = tmpText;
+      textToSend = tmpText;
       //messageBodyTextController.text = tmpText;
       String strMes = "پیام فرستاده نشد ";
       if (charCount > 800) strMes = "پیام طولانی است آنرا تقسیم بندی کنید";
@@ -788,10 +794,6 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       // getMessages(false);
       //messageBodyTextController.text = "";
     });
-  }
-
-  void backToFriendsPage() {
-    Navigator.of(context).pop();
   }
 
   void scrollToLastMessage() {

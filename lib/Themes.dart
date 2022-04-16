@@ -39,8 +39,11 @@ class Themes {
     await AppSettings.saveNightMode(true);
     await AppSettings.saveFormsBackColor(Colors.blue[100]);
     await AppSettings.saveFormsForeColor(Colors.blue[900]);
+
     await AppSettings.saveTitlesBackColor(Color.fromARGB(255, 30, 70, 130));
     await AppSettings.saveTitlesForeColor(Colors.blue[50]);
+    //await AppSettings.saveTitlesForeColor(Colors.brown[900]);
+
     await AppSettings.saveSentMessageBackColor(
         Color.fromARGB(255, 10, 30, 120));
     await AppSettings.saveReceivedMessageBackColor(
@@ -66,7 +69,7 @@ class Themes {
   }
 
   static Future setToAmberTheme() async {
-    await AppSettings.saveNightMode(true);
+    await AppSettings.saveNightMode(false);
     await AppSettings.saveFormsBackColor(Colors.amber[100]);
     await AppSettings.saveFormsForeColor(Colors.brown[900]);
     await AppSettings.saveTitlesBackColor(Colors.amber[600]);
