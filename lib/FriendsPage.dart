@@ -17,6 +17,7 @@ import 'ChatPage.dart';
 import 'ApMeMessages.dart';
 import 'PersianDateUtil.dart';
 import 'FriendsPageAppBar.dart';
+import 'package:async/async.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -35,7 +36,8 @@ class FriendsPageState extends State<FriendsPage> {
   bool initialized = false;
   int _newMessagesCount = 0;
   bool blnTimerInitialized = false;
-  Timer tmrFriendsDataRefresher;
+  //Timer tmrFriendsDataRefresher;
+  RestartableTimer _refreshTimer;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -43,12 +45,12 @@ class FriendsPageState extends State<FriendsPage> {
     // WidgetsBinding.instance.addObserver(this);
     initNotif();
     AppParameters.currentPage = "Friends";
-    super.initState();
     initialize();
+    super.initState();
     //AppSettings.resetToDefaultSetings();
   }
 
-  void initialize() async {
+  Future initialize() async {
     //if (AppParameters.currentUser != 'akbar')
     await ShortMessages.getSaveUploadMessages(
         AppParameters.currentUser == 'rose' ? 120 : 5);
@@ -57,12 +59,19 @@ class FriendsPageState extends State<FriendsPage> {
             settingValue: AppParameters.currentUser)
         .insert();
     initialized = true;
-    try {
+    //AppParameters.friendsRefreshPeriod = Duration(seconds: 15);
+    _refreshTimer =
+        RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);
+    //await getFriendsAndLastMessages(true);
+    await refreshFriends();
+    /* try {
       await refreshFriends();
     } catch (e) {}
-    setState(() {
-      refreshFriends();
-    });
+    setState(() async {
+      try {
+        await refreshFriends();
+      } catch (e) {}
+    });*/
   }
 
 /*  @override
@@ -101,105 +110,114 @@ class FriendsPageState extends State<FriendsPage> {
         break;
     }
   }
-*/
+  */
+  Future<bool> _onWillPopSimple() async {
+    backToLoginPage();
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //   statusBarColor: AppParameters
     //        .titlesForegroundColor, //or set color with: Color(0xFF0000FF)
     // ));
-    return RefreshIndicator(
-        onRefresh: () {
-          if (initialized) refreshFriends();
-          return Future.delayed(Duration(seconds: 1), () {});
-        },
-        child: Scaffold(
-            key: scaffoldKey,
-            appBar: FriendsAppBar(this).appBar(),
-            body: Container(
-              decoration: new BoxDecoration(
-                border: new Border.all(
-                    color: AppSettings.titlesBackgroundColor, width: 4),
-                color: AppSettings.formsBackgroundColor,
-              ),
-              child: ListView.builder(
-                itemCount: friendModels.length,
-                itemBuilder: (context, index) {
-                  FriendModel _model = friendModels[index];
-                  return Column(
-                    children: <Widget>[
-                      ListTile(
-                        onTap: () {
-                          openChatPage(_model.id, _model.name);
-                        },
-                        leading: GestureDetector(
-                          onTap: () {
-                            return LoginDialog().showNetworkImage(
-                                _model.avatarUrl, this.context);
-                          },
-                          child: CircleAvatar(
-                            radius:
-                                26.0, // AppSettings.messageBodyFontSize * 1.5,
-                            backgroundImage: NetworkImage(
-                                _model.avatarUrl), //_model.avatarUrl),
-                          ),
-                        ),
-                        title: Row(
-                          children: <Widget>[
-                            Text(
-                              _model.name,
-                              style: new TextStyle(
-                                color: AppSettings.formsForegroundColor,
+    return WillPopScope(
+        onWillPop: _onWillPopSimple,
+        child: RefreshIndicator(
+            onRefresh: () {
+              if (initialized) refreshFriends();
+              return Future.delayed(Duration(seconds: 1), () {});
+            },
+            child: Scaffold(
+                key: scaffoldKey,
+                appBar: FriendsAppBar(this).appBar(),
+                body: Container(
+                  decoration: new BoxDecoration(
+                    border: new Border.all(
+                        color: AppSettings.titlesBackgroundColor, width: 4),
+                    color: AppSettings.formsBackgroundColor,
+                  ),
+                  child: ListView.builder(
+                    itemCount: friendModels.length,
+                    itemBuilder: (context, index) {
+                      FriendModel _model = friendModels[index];
+                      return Column(
+                        children: <Widget>[
+                          ListTile(
+                            onTap: () {
+                              openChatPage(_model.id, _model.name);
+                            },
+                            leading: GestureDetector(
+                              onTap: () {
+                                return LoginDialog().showNetworkImage(
+                                    _model.avatarUrl, this.context);
+                              },
+                              child: CircleAvatar(
+                                radius:
+                                    26.0, // AppSettings.messageBodyFontSize * 1.5,
+                                backgroundImage: NetworkImage(
+                                    _model.avatarUrl), //_model.avatarUrl),
                               ),
                             ),
-                            SizedBox(
-                              width: 26.0,
+                            title: Row(
+                              children: <Widget>[
+                                Text(
+                                  _model.name,
+                                  style: new TextStyle(
+                                    color: AppSettings.formsForegroundColor,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 26.0,
+                                ),
+                                Text(
+                                  AppParameters.canSeeLastSeen
+                                      ? _model.datetime + "\n" + _model.lastSeen
+                                      : _model.datetime,
+                                  style: TextStyle(
+                                      color: AppSettings.formsForegroundColor,
+                                      fontSize:
+                                          AppSettings.messageDateFontSize),
+                                ),
+                              ],
                             ),
-                            Text(
-                              AppParameters.canSeeLastSeen
-                                  ? _model.datetime + "\n" + _model.lastSeen
-                                  : _model.datetime,
-                              style: TextStyle(
-                                  color: AppSettings.formsForegroundColor,
-                                  fontSize: AppSettings.messageDateFontSize),
+                            subtitle: Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: Text(
+                                _model.message,
+                                style: TextStyle(
+                                    color: AppSettings.formsForegroundColor,
+                                    fontSize: AppSettings.messageBodyFontSize),
+                              ),
                             ),
-                          ],
-                        ),
-                        subtitle: Directionality(
-                          textDirection: TextDirection.rtl,
-                          child: Text(
-                            _model.message,
-                            style: TextStyle(
-                                color: AppSettings.formsForegroundColor,
-                                fontSize: AppSettings.messageBodyFontSize),
+                            trailing: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14.0,
+                              color: AppSettings.formsForegroundColor,
+                            ),
                           ),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14.0,
-                          color: AppSettings.formsForegroundColor,
-                        ),
-                      ),
-                      Divider(
-                        color: AppSettings.titlesBackgroundColor,
-                        thickness: 3,
-                        height: 3.0,
-                      ),
-                      SizedBox(
-                        height: 20,
-                      )
-                    ],
-                  );
-                },
-              ),
-            ),
-            endDrawer: FriendsPageDrawer.sideDrawer(this)));
+                          Divider(
+                            color: AppSettings.titlesBackgroundColor,
+                            thickness: 3,
+                            height: 3.0,
+                          ),
+                          SizedBox(
+                            height: 20,
+                          )
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                endDrawer: FriendsPageDrawer.sideDrawer(this))));
   }
 
   void refreshContent() {
     setState(() {});
   }
 
+/*
   void _startRefreshTimer() {
     if (!blnTimerInitialized) {
       blnTimerInitialized = true;
@@ -209,16 +227,29 @@ class FriendsPageState extends State<FriendsPage> {
       });
     }
   }
-
+*/
   Future<void> refreshFriends() async {
-    if (isLoading) {
-      print(DateTime.now().toString() +
-          " FriendsPage web refreshing Cancelled ...");
+    if (isLoading || context.widget.toStringShort() != "FriendsPage") {
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " " +
+          context.widget.toStringShort() +
+          " web refreshing Cancelled ...");
+      if (context.widget.toStringShort() != "FriendsPage") {
+        _refreshTimer.cancel();
+        print(
+            DateTime.now().toString() + " FriendsPage Refreshing terminated.");
+      }
       return;
     }
-    isLoading = true;
+
+    setState(() {
+      isLoading = true;
+    });
     try {
-      print(DateTime.now().toString() + " FriendsPage web refreshing ...");
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " " +
+          context.widget.toStringShort() +
+          " web refreshing ...");
       await getFriendsAndLastMessages(true);
       int recordsCount = await ApMeMessages.localMessagesCount();
       if (recordsCount < 10)
@@ -226,7 +257,14 @@ class FriendsPageState extends State<FriendsPage> {
       else
         await ApMeMessages.getUnsyncedMessagesFromWeb();
     } catch (Exception) {}
-    isLoading = false;
+    //await getFriendsAndLastMessages(false);
+    friendModels = [];
+    await generateFriendModel();
+    setState(() {
+      isLoading = false;
+    });
+    _refreshTimer.reset();
+    // _masterTimer = RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);
   }
   /*void _startTimer() {
     if (!blnTimerInitialized) {
@@ -274,16 +312,19 @@ class FriendsPageState extends State<FriendsPage> {
     /*else {
       _friends = await Friends.getLocalFriendsList();
     }*/
-    friendModels = [];
-    await generateFriendModel();
+    //friendModels = [];
+    //await generateFriendModel();
     if (AppParameters.newMessagesCount > 0)
       _showNotification();
     else
       _newMessagesCount = 0;
-    setState(() {
-      isLoading = false;
-      print(DateTime.now().toString() + " FriendsPage Local refresh done.");
-    });
+
+    isLoading = false;
+    print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+        " " +
+        context.widget.toString() +
+        " Local refresh done.");
+    /* setState(() { });*/
   }
 
   Future generateFriendModel() async {
@@ -349,10 +390,15 @@ class FriendsPageState extends State<FriendsPage> {
     // AppParameters.currentF = new Friend();
     // AppParameters.currentF.friendId = friend_Id;
     // await AppParameters.currentF.fetchLocal(friend_Id);
+    _refreshTimer.cancel();
     await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => ChatPage()));
     if (!AppParameters.authenticated) {
       backToLoginPage();
+    } else {
+      refreshFriends();
+      _refreshTimer =
+          RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);
     }
     // Navigator.pushReplacement(
     //    context, MaterialPageRoute(builder: (context) => ChatPage()));
@@ -468,7 +514,7 @@ class FriendsPageState extends State<FriendsPage> {
 
   void backToLoginPage() {
     try {
-      tmrFriendsDataRefresher.cancel();
+      _refreshTimer.cancel();
     } catch (exp) {}
     try {
       Navigator.of(context).pop();

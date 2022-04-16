@@ -1,4 +1,59 @@
 class PersianDateUtil {
+  static String formatDateTime(DateTime inputDate, int format) {
+    String _output = "";
+    switch (format) {
+      case 0:
+        _output = inputDate.hour.toString() +
+            ":" +
+            inputDate.minute.toString() +
+            ":" +
+            inputDate.second.toString();
+        break;
+      case 1:
+        _output = inputDate.year.toString().padLeft(2, '0') +
+            "/" +
+            inputDate.month.toString().padLeft(2, '0') +
+            "/" +
+            inputDate.day.toString().padLeft(2, '0') +
+            "  " +
+            inputDate.hour.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.minute.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.second.toString().padLeft(2, '0');
+        break;
+      case 2:
+        _output = inputDate.year.toString().padLeft(2, '0') +
+            "/" +
+            inputDate.month.toString().padLeft(2, '0') +
+            "/" +
+            inputDate.day.toString().padLeft(2, '0') +
+            "  " +
+            inputDate.hour.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.minute.toString().padLeft(2, '0');
+        break;
+      case 3:
+        _output = inputDate.hour.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.minute.toString().padLeft(2, '0');
+
+        break;
+      case 4:
+        _output = inputDate.hour.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.minute.toString().padLeft(2, '0') +
+            ":" +
+            inputDate.second.toString().padLeft(2, '0');
+
+        break;
+      default:
+        _output = "?";
+    }
+
+    return _output;
+  }
+
   static String DayOfWeek(DateTime Gr_Date) {
     String strOut = "_";
     switch (Gr_Date.weekday) {
@@ -75,7 +130,9 @@ class PersianDateUtil {
     try {
       output += DayOfWeek(Gr_Date);
       output += " " + MItoSH(Gr_Date) + " ";
-      output += Gr_Date.hour.toString().padLeft(2, '0') + ":" + Gr_Date.minute.toString().padLeft(2, '0');
+      output += Gr_Date.hour.toString().padLeft(2, '0') +
+          ":" +
+          Gr_Date.minute.toString().padLeft(2, '0');
     } catch (exn) {}
     return output;
   }

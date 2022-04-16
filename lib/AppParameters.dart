@@ -80,8 +80,8 @@ class AppParameters {
     return mainSiteURL + "images/pf/" + userName + ".jpg";
   }
 
-  static const messageRefreshPeriod = const Duration(seconds: 20);
-  static const friendsRefreshPeriod = const Duration(seconds: 59);
+  static var chatRefreshPeriod = const Duration(seconds: 15);
+  static var friendsRefreshPeriod = const Duration(seconds: 59);
   static const saveSMSPeriod = const Duration(minutes: 20);
   static var pausePermittedSeconds = 100;
   static var authenticated = false;

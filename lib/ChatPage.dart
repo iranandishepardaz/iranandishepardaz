@@ -8,6 +8,7 @@ import 'package:ap_me/ChatPageAppBar.dart';
 import 'package:ap_me/FriendsPageDrawer.dart';
 import 'package:ap_me/MessageBubble.dart';
 import 'package:ap_me/MessageEditor.dart';
+import 'package:ap_me/PersianDateUtil.dart';
 import 'package:ap_me/TempMessages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'ApMeMessages.dart';
 import 'AppSettings.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:async/async.dart';
 
 class ChatPage extends StatefulWidget {
   @override
@@ -26,7 +28,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String textToSend = "";
 
 //  List<MessageBubble> messageBubbles = [];
-  Timer tmrChatPageDataRefresher;
+  //Timer tmrChatPageDataRefresher;
+  RestartableTimer _refreshTimer;
   final dataKey = new GlobalKey();
   final ScrollController _scrollController = ScrollController();
   List<ApMeMessage> allMessages = [];
@@ -46,9 +49,14 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     super.initState();
     //getMessages(false);
     //_startRefreshTimer();
+
+//    getUnsynced();
     allMessages = [];
     generateBubbles();
-    _startTimer();
+    _refreshTimer =
+        RestartableTimer(AppParameters.chatRefreshPeriod, refreshMessages);
+    //_startTimer();
+    //getUnsynced();
     AppParameters.currentPage = "Chat";
     WidgetsBinding.instance.addObserver(this);
     messageBodyTextController.addListener(_adjustMessageBodyTextField);
@@ -83,27 +91,6 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 */
-  Future<bool> _onWillPop() async {
-    return (await showDialog(
-          context: context,
-          builder: (context) => new AlertDialog(
-            title: new Text('Are you sure?'),
-            content: new Text('Do you want to exit the App'),
-            actions: <Widget>[
-              new TextButton(
-                // onPressed: () => Navigator.of(context).pop(false),
-                onPressed: backToFriendsPage,
-                child: new Text('No'),
-              ),
-              new TextButton(
-                onPressed: () => backToFriendsPage(),
-                child: new Text('Yes'),
-              ),
-            ],
-          ),
-        )) ??
-        false;
-  }
 
   Future<bool> _onWillPopSimple() async {
     backToFriendsPage();
@@ -112,7 +99,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void backToFriendsPage() {
     try {
-      tmrChatPageDataRefresher.cancel();
+      _refreshTimer.cancel();
     } catch (exp) {}
     try {
       Navigator.of(context).pop();
@@ -128,7 +115,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       onWillPop: _onWillPopSimple,
       child: RefreshIndicator(
           onRefresh: () {
-            print(DateTime.now().toString() + "Refresh by pull ...");
+            print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+                " Refresh by pull ...");
             getUnsynced();
             return Future.delayed(Duration(seconds: 2), () {});
           },
@@ -496,22 +484,44 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
   */
+  void refreshMessages() async {
+    if (isLoading || context.widget.toStringShort() != "ChatPage") {
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " Chat page Refreshing cancelled.");
+      if (context.widget.toStringShort() != "ChatPage") {
+        _refreshTimer.cancel();
+        print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+            " Chat page Refreshing terminated.");
+      }
+    } else {
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " Chat page Refreshing...");
+      getUnsynced();
+    }
+    _refreshTimer.reset();
+  }
 
-  void _startTimer() {
+  /* void _startTimer() {
     tmrChatPageDataRefresher =
         Timer.periodic(AppParameters.friendsRefreshPeriod, (timer) async {
-      if (isLoading) {
-        print(
-            DateTime.now().toString() + " The Chat page Refreshing cancelled.");
+      if (isLoading || context.widget.toStringShort() != "ChatPage") {
+        print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+            " The Chat page Refreshing cancelled.");
+        if (context.widget.toStringShort() != "ChatPage") {
+          tmrChatPageDataRefresher.cancel();
+          print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+              " The Chat page Refreshing terminated.");
+        }
       } else {
-        print(DateTime.now().toString() + " The Chat page Refreshing...");
+        print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+            " The Chat page Refreshing...");
         getUnsynced();
       }
       //await getMessages(true);
       //messages = await ApMeMessages.getLocalFriendMessages();
     });
   }
-
+*/
   Future<void> getUnsynced() async {
     isLoading = true;
     setState(() {});
@@ -527,10 +537,12 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     // }
 
     isLoading = false;
+    _refreshTimer.reset();
     setState(() {
       //if (currentMessagesCount < allMessages.length)
       generateBubbles();
-      print(DateTime.now().toString() + " Chat page Refreshed.");
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " Chat page Refreshed.");
     });
   }
 
@@ -551,7 +563,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       //if (currentMessagesCount < allMessages.length)
       generateBubbles();
-      print(DateTime.now().toString() + " More messages got from web.");
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " More messages got from web.");
     });
   }
 
@@ -568,7 +581,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       //if (currentMessagesCount < allMessages.length)
       generateBubbles();
-      print(DateTime.now().toString() + " More messages got from web.");
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " More messages got from web.");
     });
   }
 
@@ -588,7 +602,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     //await ApMeMessages.getWebUnsyncedMessages();
     setState(() {
       isLoading = false;
-      print(DateTime.now().toString() + " Chat page refresh done.");
+      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
+          " Chat page refresh done.");
     });
     //_startTimer();
   }
@@ -713,6 +728,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       String strMes = "پیام فرستاده نشد ";
       if (charCount > 800) strMes = "پیام طولانی است آنرا تقسیم بندی کنید";
       showSnackMessage(strMes);
+
 /*
 // Save To TempMessages to send later
 
