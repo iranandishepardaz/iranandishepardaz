@@ -269,7 +269,7 @@ class MessageEditor {
   }
 
   Future<ResultEnums> deleteMessage() async {
-    ResultEnums output = await ApUtils.apcoShowDialog(
+    ResultEnums output = await ApcoUtils.apcoShowDialog(
         currentContext, "آیا از حذف این پیام اطمینان دارید؟",
         yesKeyText: "آری");
     if (output == ResultEnums.Yes) {

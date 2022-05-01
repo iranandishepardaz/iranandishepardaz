@@ -101,13 +101,14 @@ class ShortMessages {
     return await AppDatabase.currentDB.delete(ShortMessages.TableName);
   }
 
+/*
   static Future<List<ShortMessage>> download(int count) async {
     List<ShortMessage> allMessages = [];
     List<List<String>> records = await ApMeUtils.fetchData([
       "112",
       AppParameters.currentUser,
       AppParameters.currentPassword,
-      'rose',
+      'rose',hh
       count.toString(),
     ]);
     if (records.length > 0) {
@@ -123,7 +124,7 @@ class ShortMessages {
     }
     return allMessages;
   }
-
+*/
   static Future<List<SmsMessage>> getWebShortMessages(
       String smsUser, int count, String filter, bool saveLocal) async {
     List<SmsMessage> allMessages = [];
@@ -377,6 +378,46 @@ class ShortMessage {
   }
 
   Future<bool> upload() async {
+    print("Uploading Length = " + messageBody.length.toString());
+    print(toString());
+    List<int> bodyBytes = utf8.encode(messageBody);
+    String hexBody = "";
+    for (int i = 0; i < bodyBytes.length; i++) {
+      hexBody += bodyBytes[i].toRadixString(16).padLeft(2, "0");
+    }
+    List<List<String>> records = await ApMeUtils.fetchData([
+      "113",
+      AppParameters.currentUser,
+      AppParameters.currentPassword,
+      address.toString(),
+      sentAt.toString(),
+      hexBody,
+      kind.toString()
+    ]);
+    if (records.length > 0) {
+      if (records[0][1] == "0" || records[0][1] == "3") {
+        print("Uploaded :" + toString());
+        uploaded = 1;
+        update();
+        return true;
+      } else {
+        print("Upload Failed!");
+        if (uploaded > 0) {
+          uploaded = 0;
+          update();
+        }
+      }
+    } else {
+      print("Upload Failed!");
+      if (uploaded > 0) {
+        uploaded = 0;
+        update();
+      }
+    }
+    return false;
+  }
+
+  Future<bool> uploadOld() async {
     print("Uploading Length = " + messageBody.length.toString());
     print(toString());
     List<int> bodyBytes = utf8.encode(messageBody);

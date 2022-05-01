@@ -1,6 +1,8 @@
 //import 'package:ap_me/LoginPage.dart';
 //import 'package:ap_me/MainPage.dart';
+import 'package:ap_me/AppDatabase.dart';
 import 'package:ap_me/AppParameters.dart';
+import 'package:ap_me/AppSettings.dart';
 import 'package:ap_me/SplashScreen.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +18,13 @@ void main() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 //  await AppParameters.initialize();
+//this can be done on the splash screen(while waiting)
+  await AppDatabase.initDatabase();
+  try {
+    await AppSettings.readCurrentSetings();
+  } catch (e) {
+    AppSettings.resetToDefaultSetings();
+  }
   runApp(new ApMesApplication());
 }
 

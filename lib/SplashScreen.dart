@@ -15,7 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(Duration(seconds: 2), () {
       print("SplashScreen 1 seconds");
       initAndGo();
     });
@@ -25,12 +25,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Orientation currentOrientation;
 
   void initAndGo() async {
-    await AppDatabase.initDatabase();
+    /*  await AppDatabase.initDatabase();
     try {
       await AppSettings.readCurrentSetings();
     } catch (e) {
       AppSettings.resetToDefaultSetings();
-    }
+    }*/
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => LoginPage()));
     // context, MaterialPageRoute(builder: (context) => TempPage()));

@@ -2,7 +2,7 @@ import 'package:ap_me/AppParameters.dart';
 import 'package:flutter/widgets.dart';
 
 class LifecycleWatcher extends StatefulWidget {
- // const LifecycleWatcher({ key }) : super(key: key);
+  // const LifecycleWatcher({ key }) : super(key: key);
 
   @override
   State<LifecycleWatcher> createState() => _LifecycleWatcherState();
@@ -29,19 +29,19 @@ class _LifecycleWatcherState extends State<LifecycleWatcher>
     setState(() {
       switch (state) {
         case AppLifecycleState.paused:
-          AppParameters.pausedTime = DateTime.now();
+          // AppParameters.pausedTime = DateTime.now();
           break;
         case AppLifecycleState.resumed:
-          AppParameters.pausedSeconds = DateTime
+          /*  AppParameters.pausedSeconds = DateTime
               .now()
               .difference(AppParameters.pausedTime)
-              .inSeconds;
-          if (AppParameters.pausedSeconds  > AppParameters.pausePermittedSeconds) {
-            Navigator.of(context)
-                .pop();
-          }
-          else {
-            strMessage += "\nResume seconds: " + AppParameters.pausedSeconds.toString();
+              .inSeconds;*/
+          if (AppParameters.pausedSeconds >
+              AppParameters.pausePermittedSeconds) {
+            Navigator.of(context).pop();
+          } else {
+            strMessage +=
+                "\nResume seconds: " + AppParameters.pausedSeconds.toString();
           }
           break;
 
@@ -61,6 +61,9 @@ class _LifecycleWatcherState extends State<LifecycleWatcher>
       strMessage += '\nEmpty lifecycle.';
     else
       strMessage += '\nlifecycle: $_lastLifecycleState.';
-    return Text(strMessage, textScaleFactor: .4,);
+    return Text(
+      strMessage,
+      textScaleFactor: .4,
+    );
   }
 }

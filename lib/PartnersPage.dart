@@ -145,7 +145,7 @@
 
 //   void _startTimer() {
 //     // Timer.periodic(const Duration(seconds: 60), () {
-//     //  print(DateTime.now().toString() + " Chatlist web refreshing ...");
+//     //  print(PersianDateUtil.now() + " Chatlist web refreshing ...");
 //     //    getFriendsAndLastMessage();
 // //    });
 //   }
@@ -175,7 +175,7 @@
 //     }
 //     setState(() {
 //       isLoading = false;
-//       print(DateTime.now().toString() + " Chatlist web refresh done.");
+//       print(PersianDateUtil.now() + " Chatlist web refresh done.");
 //       _showNotification("آپدیت شد");
 //       //_showNotification();
 //     });

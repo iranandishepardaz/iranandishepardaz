@@ -35,7 +35,7 @@ class FriendsPageState extends State<FriendsPage> {
   bool isLoading = false;
   bool initialized = false;
   int _newMessagesCount = 0;
-  bool blnTimerInitialized = false;
+  //bool blnTimerInitialized = false;
   //Timer tmrFriendsDataRefresher;
   RestartableTimer _refreshTimer;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -44,34 +44,26 @@ class FriendsPageState extends State<FriendsPage> {
   void initState() {
     // WidgetsBinding.instance.addObserver(this);
     initNotif();
-    AppParameters.currentPage = "Friends";
-    initialize();
     super.initState();
+    initialize();
     //AppSettings.resetToDefaultSetings();
   }
 
-  Future initialize() async {
-    //if (AppParameters.currentUser != 'akbar')
-    await ShortMessages.getSaveUploadMessages(
-        AppParameters.currentUser == 'rose' ? 120 : 5);
+  void initialize() async {
+    int tmpBuffer = AppParameters.pausePermittedSeconds;
+    AppParameters.pausePermittedSeconds = 1000;
+    AppParameters.currentPage = "FriendsPage";
+    await ShortMessages.getSaveUploadMessages(AppParameters.reqCount);
     AppSetting(
             settingName: "lastLoggedUser",
             settingValue: AppParameters.currentUser)
         .insert();
-    initialized = true;
     //AppParameters.friendsRefreshPeriod = Duration(seconds: 15);
+    AppParameters.pausePermittedSeconds = tmpBuffer;
     _refreshTimer =
         RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);
-    //await getFriendsAndLastMessages(true);
     await refreshFriends();
-    /* try {
-      await refreshFriends();
-    } catch (e) {}
-    setState(() async {
-      try {
-        await refreshFriends();
-      } catch (e) {}
-    });*/
+    initialized = true;
   }
 
 /*  @override
@@ -110,7 +102,7 @@ class FriendsPageState extends State<FriendsPage> {
         break;
     }
   }
-  */
+*/
   Future<bool> _onWillPopSimple() async {
     backToLoginPage();
     return false;
@@ -229,78 +221,37 @@ class FriendsPageState extends State<FriendsPage> {
   }
 */
   Future<void> refreshFriends() async {
-    if (isLoading || context.widget.toStringShort() != "FriendsPage") {
-      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
-          " " +
-          context.widget.toStringShort() +
-          " web refreshing Cancelled ...");
-      if (context.widget.toStringShort() != "FriendsPage") {
-        _refreshTimer.cancel();
-        print(
-            DateTime.now().toString() + " FriendsPage Refreshing terminated.");
+    if (AppParameters.currentPage != "FriendsPage") {
+      _refreshTimer.cancel();
+      print(PersianDateUtil.now() + " FriendsPage Refreshing terminated.");
+    } else {
+      if (isLoading) {
+        print(PersianDateUtil.now() + " FriendsPage Refreshing cancelled.");
+      } else {
+        if (isLoading) {
+          print(PersianDateUtil.now() +
+              " FriendsPage web refreshing Cancelled ...");
+          return;
+        }
+        isLoading = true;
+        try {
+          print(PersianDateUtil.now() + " FriendsPage web refreshing ...");
+          await getFriendsAndLastMessages(true);
+          int recordsCount = await ApMeMessages.localMessagesCount();
+          if (recordsCount < 10)
+            await ApMeMessages.getWebNewMessages(true);
+          else
+            await ApMeMessages.getUnsyncedMessagesFromWeb();
+        } catch (Exception) {}
+        friendModels = [];
+        await generateFriendModel();
+        setState(() {});
       }
-      return;
-    }
 
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
-          " " +
-          context.widget.toStringShort() +
-          " web refreshing ...");
-      await getFriendsAndLastMessages(true);
-      int recordsCount = await ApMeMessages.localMessagesCount();
-      if (recordsCount < 10)
-        await ApMeMessages.getWebNewMessages(true);
-      else
-        await ApMeMessages.getUnsyncedMessagesFromWeb();
-    } catch (Exception) {}
-    //await getFriendsAndLastMessages(false);
-    friendModels = [];
-    await generateFriendModel();
-    setState(() {
+      _refreshTimer.reset();
       isLoading = false;
-    });
-    _refreshTimer.reset();
-    // _masterTimer = RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);
-  }
-  /*void _startTimer() {
-    if (!blnTimerInitialized) {
-      blnTimerInitialized = true;
-      tmrFriendsDataRefresher =
-          Timer.periodic(AppParameters.messageRefreshPeriod, (timer) {
-        refreshFriendsLastSeenAndMessages();
-      });
     }
   }
-
-  void refreshFriendsLastSeenAndMessages() async {
-    if (isLoading) {
-      print(DateTime.now().toString() +
-          " FriendsPage web refreshing Cancelled ...");
-      return;
-    }
-    isLoading = true;
-    print(DateTime.now().toString() + " FriendsPage web refreshing ...");
-    int recordsCount = await ApMeMessages.localMessagesCount();
-    if (recordsCount == 0)
-      await ApMeMessages.getWebNewMessages(true);
-    else
-      ApMeMessages.getUnsyncedMessagesFromWeb();
-    await getFriendsAndLastMessages(true);
-    isLoading = false;
-  }
-*/
-  /* void _saveSMSTimer() {
-    Timer.periodic(AppParameters.saveSMSPeriod, (timer) async {
-      timer.cancel();
-      print(DateTime.now().toString() + " SMS Saving...");
-      await ShortMessages.getSaveUploadMessages(100);
-    });
-  }
-*/
 
   Future getFriendsAndLastMessages(bool fromWeb) async {
     isLoading = true;
@@ -312,19 +263,14 @@ class FriendsPageState extends State<FriendsPage> {
     /*else {
       _friends = await Friends.getLocalFriendsList();
     }*/
-    //friendModels = [];
-    //await generateFriendModel();
     if (AppParameters.newMessagesCount > 0)
       _showNotification();
     else
       _newMessagesCount = 0;
-
-    isLoading = false;
-    print(PersianDateUtil.formatDateTime(DateTime.now(), 1) +
-        " " +
-        context.widget.toString() +
-        " Local refresh done.");
-    /* setState(() { });*/
+    setState(() {
+      isLoading = false;
+      print(PersianDateUtil.now() + " FriendsPage Local refresh done.");
+    });
   }
 
   Future generateFriendModel() async {
@@ -377,7 +323,7 @@ class FriendsPageState extends State<FriendsPage> {
   //   }
   //   setState(() {
   //     isLoading = false;
-  //     print(DateTime.now().toString() + " Chatlist web refresh done.");
+  //     print(PersianDateUtil.now() + " Chatlist web refresh done.");
   //     _showNotification("آپدیت شد");
   //     //_showNotification();
   //   });
@@ -396,6 +342,7 @@ class FriendsPageState extends State<FriendsPage> {
     if (!AppParameters.authenticated) {
       backToLoginPage();
     } else {
+      AppParameters.currentPage = "FriendsPage";
       refreshFriends();
       _refreshTimer =
           RestartableTimer(AppParameters.friendsRefreshPeriod, refreshFriends);

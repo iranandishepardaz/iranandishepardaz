@@ -54,13 +54,31 @@ class ChatAppBar {
           onPressed: parent.scrollToLastMessage,
           icon: Icon(Icons.arrow_downward_sharp),
         ),
-        IconButton(
-          //color: AppSettings.titlesForegroundColor,
-          color: AppParameters.networkOK
-              ? AppSettings.titlesForegroundColor
-              : Colors.red,
-          onPressed: parent.getUnsynced,
-          icon: Icon(Icons.cloud_download),
+        Visibility(
+          child: Container(
+              child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: CircularProgressIndicator(
+              backgroundColor: AppSettings.titlesForegroundColor,
+              strokeWidth: 4,
+            ),
+          )),
+          visible: parent.isLoading,
+        ),
+        Visibility(
+          child: Container(
+              child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: IconButton(
+              //color: AppSettings.titlesForegroundColor,
+              color: AppParameters.networkOK
+                  ? AppSettings.titlesForegroundColor
+                  : Colors.red,
+              onPressed: parent.getUnsynced,
+              icon: Icon(Icons.cloud_download),
+            ),
+          )),
+          visible: !parent.isLoading,
         ),
       ],
     );

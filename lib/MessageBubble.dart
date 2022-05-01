@@ -1,5 +1,6 @@
 import 'package:ap_me/ApMeMessages.dart';
 import 'package:ap_me/ApcoMessageBox.dart';
+import 'package:ap_me/ApcoUtils.dart';
 import 'package:ap_me/ChatPage.dart';
 import 'package:ap_me/PersianDateUtil.dart';
 import 'package:flutter/cupertino.dart';
@@ -85,7 +86,8 @@ class _MessageBubbleState extends State<MessageBubble> {
                   onDoubleTap: () {
                     Clipboard.setData(
                         ClipboardData(text: widget.currentMessage.messageBody));
-                    widget.parent.showSnackMessage("در حافظه موقت کپی شد");
+                    //widget.parent.showSnackMessage("در حافظه موقت کپی شد");
+                    ApcoUtils.showSnackMessage("در حافظه موقت کپی شد", context);
                   },
                   // Start List multi-select mode on long press
                   onLongPress: () {

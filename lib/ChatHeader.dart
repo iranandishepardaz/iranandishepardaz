@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+/*import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'AppParameters.dart';
 import 'AppSettings.dart';
@@ -87,3 +87,4 @@ class ChatHeader extends AppBar {
     );
   }
 }
+*/

@@ -46,15 +46,17 @@ class Friends {
         _friends.add(tmpFriend);
         tmpFriend.insert();
       }
-    Friend tmpFriend = new Friend(
-      friendId: AppParameters.currentUser,
-      firstName: "خودم",
-      lastName: "برای ذخیره",
-      lastSeen: 0,
-    );
+    else {
+      Friend tmpFriend = new Friend(
+        friendId: AppParameters.currentUser,
+        firstName: "خودم",
+        lastName: "برای ذخیره",
+        lastSeen: 0,
+      );
 
-    _friends.add(tmpFriend);
-    tmpFriend.insert();
+      _friends.add(tmpFriend);
+      tmpFriend.insert();
+    }
     //  _friends.add(Friend(
     //     friendId: AppParameters.currentFriend, firstName: "خودم", lastName: "برای ذخیره"));
     return _friends;

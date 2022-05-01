@@ -43,7 +43,7 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
               icon: Icon(Icons.drafts_sharp),
               color: Colors.white,
               onPressed: () {
-                messageToShowCount = 20;
+                // messageToShowCount = 20;
                 reverseList = false;
                 getLocalShortMessages(messageToShowCount);
                 //openNotPage();

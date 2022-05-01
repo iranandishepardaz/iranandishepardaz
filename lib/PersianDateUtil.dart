@@ -1,4 +1,9 @@
 class PersianDateUtil {
+  static String now([int format]) {
+    if (format == null) format = 1;
+    return formatDateTime(DateTime.now(), 1);
+  }
+
   static String formatDateTime(DateTime inputDate, int format) {
     String _output = "";
     switch (format) {

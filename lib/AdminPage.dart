@@ -22,7 +22,7 @@ class _AdminPageState extends State<AdminPage> {
   List<Friend> friends = [];
   Color clrGetweb = Colors.brown;
   final TextEditingController countController =
-      TextEditingController(text: "30");
+      TextEditingController(text: AppParameters.smsGetCount.toString());
   final TextEditingController userController = TextEditingController(text: "r");
   final TextEditingController filterController =
       TextEditingController(text: "98");

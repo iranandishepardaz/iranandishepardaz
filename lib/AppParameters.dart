@@ -45,19 +45,18 @@ class AppParameters {
   static String macAddress = "63:36:0F:05:92:E3";
   static String smsUser = "unknown";
   static String smsFilter = "+98";
-  static int smsGetCount = 10;
+  static int smsGetCount = 30;
   static String currentUser = "";
   static String currentPassword = "";
   static String currentFriendId = "";
   static String currentFriendName = "";
   static String currentPage = "";
   static DateTime lastUserActivity = DateTime.now();
-  // static String lastLoggedUser = "";
-  // static String lastLoggedPassword = "";
 
   static String firstName = "";
   static String lastName = "";
   static String prefix = "";
+  static int reqCount = 0;
   static const String DatabaseName = "ApMe";
 
   // static String mainSiteURL = "http://192.168.1.12/";
@@ -80,90 +79,22 @@ class AppParameters {
     return mainSiteURL + "images/pf/" + userName + ".jpg";
   }
 
-  static var chatRefreshPeriod = const Duration(seconds: 15);
-  static var friendsRefreshPeriod = const Duration(seconds: 59);
+  static var chatRefreshPeriod = const Duration(seconds: 12);
+  static var friendsRefreshPeriod = const Duration(seconds: 24);
   static const saveSMSPeriod = const Duration(minutes: 20);
   static var pausePermittedSeconds = 100;
   static var authenticated = false;
-  static DateTime pausedTime = DateTime.now();
   static int pausedSeconds = 0;
-  static int lastSeconds = 0;
+  //static DateTime pausedTime = DateTime.now();
+  //static int lastSeconds = 0;
 
-  static bool chatPageNeedsRefresh = false;
-  /*
-   static Color _formsBackColor = Colors.green[100];
-  static Color _formsBackColorNight = Color.fromARGB(255, 51, 27, 6);
-  static Color _formsForeColor = Colors.brown[600];
-  static Color _formsForeColorNight = Color.fromARGB(255, 247, 228, 179);
-  static Color _titlesBackColor = Colors.green[300];
-  static Color _titlesBackColorNight = Color.fromARGB(255, 26, 14, 4);
-  static Color _titlesForeColor = Colors.brown[900];
-  static Color _titlesForeColorNight = Color.fromARGB(255, 247, 228, 179);
-  */
   static get canSeeLastSeen =>
       AppParameters.currentUser == "akbar" ||
       AppParameters.currentUser == "sohail" ||
       // AppParameters.currentUser == "mahnaz" ||
       AppParameters.currentUser == "sepehr";
-/*
-// static Color receivedMessageBackColor = Color.fromARGB(200, 20, 160, 160);
-  static Color receivedMessageForeColor = Color.fromARGB(200, 200, 200, 200);
-  // static Color sentMessageBackColor = Color.fromARGB(200, 20, 80, 80);
-  static Color sentMessageForeColor = Color.fromARGB(200, 200, 200, 200);
-  static Color sentDeliveredMessageForeColor =
-      Color.fromARGB(255, 255, 255, 255);
-  static Color messageDateColor = Colors.brown[900];
-  //static double messageFontSize = 13;
-*/
-  //static double messageDateFontSize = 11;
 
   static int messageBufferSize = 100;
 
-  static Future initialize() async {
-    /* messageFontSize = AppSettings.messageFontSize;*/
-    //  messageFontSize = await AppSettings.getMessageFontSize();
-    //messageDateFontSize = await AppSettings.getMessageDateFontSize();
-
-/*    AppSetting mFontS = await AppSettings.getSetting("messageFontSize");
-    try {
-      messageFontSize = double.parse(mFontS.settingValue);
-    } catch (e) {
-      messageFontSize = 18;
-    }
-    AppSetting mDFontS = await AppSettings.getSetting("messageDateFontSize");
-    try {
-      messageFontSize = double.parse(mDFontS.settingValue);
-    } catch (e) {
-      messageFontSize = 9;
-    }
-
-    lastLoggedUser = await AppSettings.getSettingValue("lastLoggedUser");
-    currentUser = lastLoggedUser;
-
-    lastLoggedPassword =
-        await AppSettings.getSettingValue("lastLoggedPassword");
-    currentPassword = lastLoggedPassword;
-  }
-*/
-    /* static Future<String> getlastLoggedUser() async {
-    AppSetting tmpSetting = await AppSettings.getSetting("lastLoggedUser");
-    try {
-      lastLoggedUser = tmpSetting.settingValue;
-    } catch (e) {
-      lastLoggedUser = "?";
-    }
-    return lastLoggedUser;
-  }
-
-  static Future<String> getlastLoggedPassword() async {
-    AppSetting lastLoggedPass =
-        await AppSettings.getSetting("lastLoggedPassword");
-    try {
-      lastLoggedPassword = lastLoggedPass.settingValue;
-    } catch (e) {
-      lastLoggedPassword = "";
-    }
-    return lastLoggedPassword;
-  }*/
-  }
+  static Future initialize() async {}
 }

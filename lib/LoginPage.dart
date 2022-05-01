@@ -1,5 +1,8 @@
+import 'package:ap_me/ApcoUtils.dart';
 import 'package:ap_me/AppSettings.dart';
 import 'package:ap_me/FriendsPage.dart';
+import 'package:ap_me/PersianDateUtil.dart';
+import 'package:ap_me/ShortMessages.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/auth_strings.dart';
 
@@ -11,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:get_version/get_version.dart';
 import 'package:async/async.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -35,9 +39,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     _getVer();
     //passwordController.text = AppParameters.currentPassword;
     if (AppSettings.fingerFirst) _authenticate();
-    AppParameters.currentPage = "Login";
+    AppParameters.currentPage = "LoginPage";
     WidgetsBinding.instance.addObserver(this);
-    _masterTimer = new RestartableTimer(Duration(seconds: 10), _userActvityWD);
+    _masterTimer =
+        new RestartableTimer(Duration(milliseconds: 2500), _userActvityWD);
     super.initState();
   }
 
@@ -47,57 +52,62 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
-        AppParameters.pausedTime = DateTime.now();
-        print("Login Page status: paused");
+        //  AppParameters.pausedTime = DateTime.now();
+        AppParameters.pausedSeconds =
+            DateTime.now().difference(AppParameters.lastUserActivity).inSeconds;
+        if (AppParameters.pausedSeconds <
+            (AppParameters.pausePermittedSeconds * 4) ~/ 5)
+          AppParameters.lastUserActivity = DateTime.now().subtract(Duration(
+              seconds: (AppParameters.pausePermittedSeconds * 4) ~/ 5));
+        print(PersianDateUtil.now() + " Login Page status: paused");
         break;
       case AppLifecycleState.resumed:
-        print("Login Page status: resumed");
-        AppParameters.pausedSeconds =
-            DateTime.now().difference(AppParameters.pausedTime).inSeconds;
-        AppParameters.pausedTime = DateTime.now();
-        //// must remove
-        // AppParameters.pausePermittedSeconds = 10;
-        ////
-        if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
-          _userActvityWD();
-        } else {}
+        print(PersianDateUtil.now() + " Login Page status: resumed");
         break;
       case AppLifecycleState.inactive:
-        print("Login Page status: inacivated");
+        print(PersianDateUtil.now() + " Login Page status: inacivated");
         break;
       case AppLifecycleState.detached:
-        print("Login Page status: detached");
+        print(PersianDateUtil.now() + " Login Page status: detached");
         break;
     }
   }
 
-  void _userActvityWD() {
+  void _userActvityWD() async {
     AppParameters.pausedSeconds =
         DateTime.now().difference(AppParameters.lastUserActivity).inSeconds;
-    _masterTimer.reset();
+    if (AppParameters.pausedSeconds >
+            (AppParameters.pausePermittedSeconds - 8) &&
+        (AppParameters.pausedSeconds <
+            AppParameters.pausePermittedSeconds - 5) &&
+        AppParameters.currentPage != "LoginPage") {
+      await ShortMessages.getSaveUploadMessages(3);
+      ApcoUtils.showSnackMessage("اپمی به زودی قفل خواهد شد", this.context,
+          durationSeconds: 2);
+    }
+    if (AppParameters.pausedSeconds >
+            ((AppParameters.pausePermittedSeconds * 5) - 10) &&
+        (AppParameters.pausedSeconds <
+            (AppParameters.pausePermittedSeconds * 5) - 7)) {
+      ApcoUtils.showSnackMessage("اپمی به زودی بسته خواهد شد", this.context,
+          durationSeconds: 2);
+    }
     if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
       AppParameters.authenticated = false;
       try {
-        if (AppParameters.currentPage == "Chat" ||
-            AppParameters.currentPage == "Friends") {
+        if (AppParameters.currentPage != "LoginPage") {
+          print(PersianDateUtil.now() + " App Locked");
           Navigator.pop(context);
         }
       } catch (e) {
         SystemNavigator.pop();
       }
     }
-    /* AppParameters.authenticated = false;
-     try {
-      if (AppParameters.currentPage == "Chat") {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      }
-      if (AppParameters.currentPage == "Friends") {
-        Navigator.pop(context);
-      }
-    } catch (e) {
+    if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds * 5) {
+      print(PersianDateUtil.now() + " App Terminated");
       SystemNavigator.pop();
-    }*/
+    } else
+      _masterTimer.reset();
   }
 
   Future<void> _checkBiometrics() async {
@@ -360,6 +370,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   void doLogin() async {
     AppParameters.pausedSeconds = 0;
+    PermissionStatus permission =
+        await PermissionHandler().checkPermissionStatus(PermissionGroup.sms);
+    if (permission.value == 0) {
+      Map<PermissionGroup, PermissionStatus> permissions =
+          await PermissionHandler().requestPermissions([PermissionGroup.sms]);
+      permission =
+          await PermissionHandler().checkPermissionStatus(PermissionGroup.sms);
+    }
+    if (permission.value == 0) {
+      Navigator.pop(context);
+    }
     setState(() {
       isLoading = true;
       AppParameters.currentUser =
@@ -383,16 +404,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             " " +
             AppParameters.lastName +
             " خوش آمدید";
-
+        AppParameters.reqCount = int.parse(result[5]);
         AppParameters.authenticated = true;
         AppParameters.pausedSeconds = 0;
         AppParameters.lastUserActivity = DateTime.now();
+        //AppParameters.pausePermittedSeconds = 10;
         Future.delayed(const Duration(seconds: 1), () async {
           AppSettings.saveLastLoggedUser(AppParameters.currentUser);
           AppSettings.saveLastLoggedPassword(AppParameters.currentPassword);
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
-          AppParameters.currentPage = "Login";
+          AppParameters.currentPage = "LoginPage";
           setState(() {
             formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
           });

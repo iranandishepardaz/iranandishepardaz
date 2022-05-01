@@ -44,7 +44,9 @@ class FriendsAppBar {
             height: 10,
             child: IconButton(
               icon: Icon(Icons.menu),
-              color: AppSettings.titlesForegroundColor,
+              color: AppParameters.networkOK
+                  ? AppSettings.titlesForegroundColor
+                  : Colors.red,
               onPressed: () {
                 // getFriendsAndLastMessages(false);
                 parent.scaffoldKey.currentState.openEndDrawer();

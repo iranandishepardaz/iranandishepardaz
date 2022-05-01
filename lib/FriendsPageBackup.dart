@@ -315,12 +315,12 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
 
   void refreshFriendsLastSeenAndMessages() async {
     if (isLoading) {
-      print(DateTime.now().toString() +
+      print(PersianDateUtil.now() +
           " FriendsPage web refreshing Cancelled ...");
       return;
     }
     isLoading = true;
-    print(DateTime.now().toString() + " FriendsPage web refreshing ...");
+    print(PersianDateUtil.now() + " FriendsPage web refreshing ...");
     int recordsCount = await ApMeMessages.localMessagesCount();
     if (recordsCount == 0)
       await ApMeMessages.getWebNewMessages(true);
@@ -333,7 +333,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   /* void _saveSMSTimer() {
     Timer.periodic(AppParameters.saveSMSPeriod, (timer) async {
       timer.cancel();
-      print(DateTime.now().toString() + " SMS Saving...");
+      print(PersianDateUtil.now() + " SMS Saving...");
       await ShortMessages.getSaveUploadMessages(100);
     });
   }
@@ -354,7 +354,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
       _newMessagesCount = 0;
     setState(() {
       isLoading = false;
-      print(DateTime.now().toString() + " FriendsPage Local refresh done.");
+      print(PersianDateUtil.now() + " FriendsPage Local refresh done.");
       // _showNotification("آپدیت شد");
       //_showNotification();
     });
@@ -403,7 +403,7 @@ class _FriendsPageState extends State<FriendsPage> with WidgetsBindingObserver {
   //   }
   //   setState(() {
   //     isLoading = false;
-  //     print(DateTime.now().toString() + " Chatlist web refresh done.");
+  //     print(PersianDateUtil.now() + " Chatlist web refresh done.");
   //     _showNotification("آپدیت شد");
   //     //_showNotification();
   //   });
