@@ -1,53 +1,27 @@
 import 'package:flutter/material.dart';
-//import 'AdminPage.dart';
-import 'AdminPage.dart';
-import 'AppParameters.dart';
-import 'AppSettings.dart';
+//import 'AppParameters.dart';
+//import 'AppSettings.dart';
 
-class LoginDialog {
-  showNetworkImage(String address, BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          txtUserNameController.text = AppParameters.currentUser;
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(
-                  width: 2.0, color: AppSettings.titlesForegroundColor),
-            ),
-            elevation: 16,
-            backgroundColor: AppSettings.titlesBackgroundColor,
-            child: Container(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Image.network(address),
-              ),
-            ),
-          );
-        });
-  }
-
-  final txtUserNameController = TextEditingController();
-  final txtPasswordController = TextEditingController();
-  final txtformMessageController = TextEditingController();
+class AP_DialogBox {
+  static final txtUserNameController = TextEditingController();
+  static final txtPasswordController = TextEditingController();
+  static final txtformMessageController = TextEditingController();
   String contentText = "شروع";
 
-  showLoginDialog(BuildContext context) {
-    txtformMessageController.text = "وارد حساب خود شوید";
+  static showDialogBox(BuildContext theContext, Function todoFunction) {
+    txtformMessageController.text = "اطمینان دارید؟";
     showDialog(
-        context: context,
-        builder: (context) {
+        context: theContext,
+        builder: (theContext) {
           txtUserNameController.text = ""; // AppParameters.currentUser;
-          return StatefulBuilder(builder: (context, setState) {
+          return StatefulBuilder(builder: (theContext, setState) {
             return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                    width: 4.0, color: AppSettings.titlesForegroundColor),
+                side: BorderSide(width: 4.0, color: Colors.white),
               ),
               elevation: 16,
-              backgroundColor: AppSettings.titlesBackgroundColor,
+              backgroundColor: Colors.lightBlue,
               child: Container(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
@@ -85,7 +59,7 @@ class LoginDialog {
                           //},
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       Row(
@@ -98,16 +72,9 @@ class LoginDialog {
                             color: Colors.red[400],
                             child: InkWell(
                               onTap: () async {
-                                txtUserNameController.text =
-                                    txtUserNameController.text.trim();
-                                if (txtUserNameController.text == "admin" &&
-                                    txtPasswordController.text == "470125") {
-                                  await Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (context) => AdminPage()));
-                                  Navigator.of(context).pop();
-                                } else {
-                                  Navigator.of(context).pop();
+                                if (true) {
+                                  await todoFunction();
+                                  Navigator.of(theContext).pop();
                                 }
                               },
                               child: Container(
@@ -134,8 +101,8 @@ class LoginDialog {
                             Text(txtformMessageController.text,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: AppSettings.titlesForegroundColor,
-                                  fontSize: AppSettings.messageBodyFontSize,
+                                  color: Colors.yellow,
+                                  fontSize: 14,
                                 )),
                           ]),
                     ],

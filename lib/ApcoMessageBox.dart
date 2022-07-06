@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:ap_me/ApMeMessages.dart';
-import 'package:ap_me/AppSettings.dart';
+import 'ApMeMessages.dart';
+import 'AppSettings.dart';
 import 'package:flutter/material.dart';
 
 import 'AppParameters.dart';
@@ -11,7 +11,7 @@ class ApcoMessageBox {
   final txtPasswordController = TextEditingController();
   final txtformMessageController = TextEditingController();
   static ApMeMessage currentMessage = ApMeMessage();
-  static BuildContext currentContext;
+  static BuildContext? currentContext;
   String contentText = "شروع";
   showMessage(
       ApMeMessage current_Message, String imageAddress, BuildContext context) {
@@ -105,8 +105,8 @@ class ApcoMessageBox {
         });
   }
 
-  Future<bool> showMessageToEdit(
-      ApMeMessage message, String imageAddress, BuildContext context) {
+  Future<void> showMessageToEdit(
+      ApMeMessage message, String imageAddress, BuildContext context) async {
     showDialog(
         context: context,
         builder: (context) {
@@ -223,7 +223,7 @@ class ApcoMessageBox {
                               onPressed: () async {
                                 bool done = await editTextMessage();
                                 if (done) {
-                                  return true;
+                                  return;
                                   //Navigator.pop(currentContext);
                                 } else {}
                               },
@@ -289,7 +289,8 @@ class ApcoMessageBox {
     int count = messageBodyTextController.text.split('\n').length;
     if (count < 6) {
       //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
-      var newHeight = (count + 1) * 2 * AppSettings.messageBodyFontSize;
+      double newHeight = (count + 1) * 2;
+      newHeight *= AppSettings.messageBodyFontSize;
       // setState(() {
       _inputHeight = newHeight;
       //});
@@ -300,7 +301,7 @@ class ApcoMessageBox {
   Future<bool> editTextMessage() async {
     //  if (txtUserNameController.text.length == 0) return deleteTextMessage();
     currentMessage.messageBody = messageBodyTextController.text;
-    ApMeMessage editedMessage = await ApMeMessages.editMessage(currentMessage);
+    ApMeMessage? editedMessage = await ApMeMessages.editMessage(currentMessage);
     if (editedMessage != null) {
       await editedMessage.update();
       return true;

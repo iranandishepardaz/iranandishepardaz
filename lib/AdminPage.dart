@@ -1,13 +1,13 @@
-import 'package:ap_me/AppSettingsPage.dart';
-import 'package:ap_me/Friends.dart';
-import 'package:ap_me/AppParameters.dart';
-import 'package:ap_me/ChatPage.dart';
-import 'package:ap_me/ApMeMessages.dart';
-import 'package:ap_me/FriendsPage.dart';
-import 'package:ap_me/ShortMessagesPage.dart';
-import 'package:ap_me/TempMessages.dart';
+import '/AppSettingsPage.dart';
+import '/Friends.dart';
+import '/AppParameters.dart';
+import '/ChatPage.dart';
+import '/ApMeMessages.dart';
+import '/FriendsPage.dart';
+import '/ShortMessagesPage.dart';
+import '/TempMessages.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+//import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'AppSettings.dart';
 
@@ -206,8 +206,8 @@ class _AdminPageState extends State<AdminPage> {
   Widget btnShortMessages(String text) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(primary: Colors.blue),
-      child: Text(text),
       onPressed: _openSMSPage,
+      child: Text(text),
     );
   }
 
@@ -232,9 +232,12 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _openSMSPage() {
-    if (AppParameters.canSeeLastSeen && AppParameters.currentUser == "akbar")
+    if (AppParameters.canSeeLastSeen &&
+        (AppParameters.currentUser == "akbar" ||
+            AppParameters.currentUser == "sepehr")) {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => ShortMessagesPage()));
+    }
   }
 
   Future<void> getFriendsListFromServer() async {
@@ -285,8 +288,8 @@ class _AdminPageState extends State<AdminPage> {
     var _messages =
         await ApMeMessages.getLocalMessages(int.parse(countController.text));
     var _users = await Friends.getLocalFriendsList();
-    print(_messages.length.toString() + " Messages Saved to Bank");
-    print(_users.length.toString() + " Users Saved to Bank");
+    debugPrint(_messages.length.toString() + " Messages Saved to Bank");
+    debugPrint(_users.length.toString() + " Users Saved to Bank");
     setState(() {
       messages = _messages;
       users = _users;

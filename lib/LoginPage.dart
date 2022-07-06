@@ -1,18 +1,18 @@
-import 'package:ap_me/ApcoUtils.dart';
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/FriendsPage.dart';
-import 'package:ap_me/PersianDateUtil.dart';
-import 'package:ap_me/ShortMessages.dart';
+import 'ApcoUtils.dart';
+import 'AppSettings.dart';
+import 'FriendsPage.dart';
+import 'PersianDateUtil.dart';
+import 'ShortMessages.dart';
 import 'package:flutter/services.dart';
-import 'package:local_auth/auth_strings.dart';
-
+//import 'package:local_auth/auth_strings.dart';
+//import 'package:local_auth/local_auth.dart';
+import 'package:flutter_local_auth_invisible/flutter_local_auth_invisible.dart';
 import 'ApMeUtils.dart';
 import 'AppParameters.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:get_version/get_version.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:async/async.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -24,7 +24,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final txtUserNameController = TextEditingController();
   final txtPasswordController = TextEditingController();
-  String formMessage = "...";
+  Color fingerIconColor = Colors.grey;
+  String formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
   bool isLoading = false;
 
   List<BiometricType> _availableBiometrics = [];
@@ -34,19 +35,19 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   @override
   void initState() {
     txtUserNameController.text = AppSettings.lastLoggedUser;
-    _checkBiometrics();
+    //_checkBiometrics();
     _getAvailableBiometric();
     _getVer();
     //passwordController.text = AppParameters.currentPassword;
-    if (AppSettings.fingerFirst) _authenticate();
     AppParameters.currentPage = "LoginPage";
     WidgetsBinding.instance.addObserver(this);
     _masterTimer =
-        new RestartableTimer(Duration(milliseconds: 2500), _userActvityWD);
+        RestartableTimer(const Duration(milliseconds: 2500), _userActvityWD);
     super.initState();
+    if (AppSettings.fingerFirst) _authenticate();
   }
 
-  RestartableTimer _masterTimer;
+  RestartableTimer? _masterTimer;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -56,19 +57,20 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         AppParameters.pausedSeconds =
             DateTime.now().difference(AppParameters.lastUserActivity).inSeconds;
         if (AppParameters.pausedSeconds <
-            (AppParameters.pausePermittedSeconds * 4) ~/ 5)
+            (AppParameters.pausePermittedSeconds * 4) ~/ 5) {
           AppParameters.lastUserActivity = DateTime.now().subtract(Duration(
               seconds: (AppParameters.pausePermittedSeconds * 4) ~/ 5));
-        print(PersianDateUtil.now() + " Login Page status: paused");
+        }
+        debugPrint("${PersianDateUtil.now()} Login Page status: paused");
         break;
       case AppLifecycleState.resumed:
-        print(PersianDateUtil.now() + " Login Page status: resumed");
+        debugPrint(PersianDateUtil.now() + " Login Page status: resumed");
         break;
       case AppLifecycleState.inactive:
-        print(PersianDateUtil.now() + " Login Page status: inacivated");
+        debugPrint(PersianDateUtil.now() + " Login Page status: inacivated");
         break;
       case AppLifecycleState.detached:
-        print(PersianDateUtil.now() + " Login Page status: detached");
+        debugPrint(PersianDateUtil.now() + " Login Page status: detached");
         break;
     }
   }
@@ -96,7 +98,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       AppParameters.authenticated = false;
       try {
         if (AppParameters.currentPage != "LoginPage") {
-          print(PersianDateUtil.now() + " App Locked");
+          debugPrint(PersianDateUtil.now() + " App Locked");
           Navigator.pop(context);
         }
       } catch (e) {
@@ -104,70 +106,96 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
     }
     if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds * 5) {
-      print(PersianDateUtil.now() + " App Terminated");
+      debugPrint(PersianDateUtil.now() + " App Terminated");
       SystemNavigator.pop();
     } else
-      _masterTimer.reset();
+      _masterTimer!.reset();
   }
-
+/*
   Future<void> _checkBiometrics() async {
     //AppParameters.pausePermittedSeconds = 10;
     bool canCheckBiometric = false;
     try {
       canCheckBiometric = await auth.canCheckBiometrics;
     } on PlatformException catch (e) {
-      print("Error: $e");
+      debugPrint("Error: $e");
     }
     if (!mounted) return;
     setState(() {
       AppParameters.canCheckBiometric = canCheckBiometric;
     });
   }
+*/
 
   Future<void> _getAvailableBiometric() async {
-    List<BiometricType> availableBiometrics = [];
-    try {
-      availableBiometrics = await auth.getAvailableBiometrics();
-    } on PlatformException catch (e) {
-      print(e);
+    AppParameters.canCheckBiometric = false;
+    _availableBiometrics = await LocalAuthentication.getAvailableBiometrics();
+    if (_availableBiometrics.contains(BiometricType.face)) {
+      // Face ID.
+    } else if (_availableBiometrics.contains(BiometricType.fingerprint)) {
+      setState(() {
+        AppParameters.canCheckBiometric = true;
+      });
     }
-
-    setState(() {
-      _availableBiometrics = availableBiometrics;
-    });
   }
 
+  String AppVersion = "0.0.0";
   void _getVer() async {
     try {
-      formMessage = await GetVersion.projectVersion;
-      formMessage = "Version : " + formMessage;
+      //Temp Comment
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      AppVersion = "Version: ${packageInfo.version}";
+      /* String appName = packageInfo.appName;
+      String packageName = packageInfo.packageName;
+      String buildNumber = packageInfo.buildNumber;
+
+      formMessage = "Version : $version";*/
     } on PlatformException {
-      formMessage = 'Failed to get platform version.';
+      formMessage = '--';
     }
     //setState(() {});
   }
 
   Future<void> _authenticate() async {
-    bool authenticated = false;
-    AndroidAuthMessages androidAuthMessages = new AndroidAuthMessages(
+    // bool authenticated = false;
+    setState(() {
+      fingerIconColor = Colors.blue;
+      formMessage = "حسگر را لمس کنید";
+    });
+    bool authenticated = await LocalAuthentication.authenticateWithBiometrics(
+      localizedReason: 'Please authenticate to show account balance',
+      useErrorDialogs: false,
+    );
+
+/*
+    AndroidAuthMessages androidAuthMessages = const AndroidAuthMessages(
         signInTitle: "ApMe",
         cancelButton: "انصراف",
-        fingerprintHint: "حسگر را لمس کنید",
-        fingerprintNotRecognized: "شناسایی انجام نشد",
-        fingerprintSuccess: "شناسایی انجام شد");
+        biometricHint: "حسگر را لمس کنید",
+        biometricNotRecognized: "شناسایی انجام نشد",
+        biometricSuccess: "شناسایی انجام شد");
     try {
-      authenticated = await auth.authenticateWithBiometrics(
+      authenticated = await auth.authenticate(
           localizedReason: "ورود به برنامه",
           useErrorDialogs: true,
           androidAuthStrings: androidAuthMessages,
           stickyAuth: false);
     } on PlatformException catch (e) {
-      print(e);
+      debugPrint(e);
     }
+    */
     if (!mounted) return;
-    _autherized = authenticated ? "Autherized success" : "Failed to Autherize";
-
-    print(_autherized);
+    setState(() {
+      if (authenticated) {
+        fingerIconColor = Colors.blue;
+        formMessage = "پذیرفته شد";
+      } else {
+        fingerIconColor = Colors.red;
+        formMessage = "دوباره تلاش کنید";
+      }
+    });
+    //  _autherized = authenticated ? "Autherized success" : "Failed to Autherize";
+    // debugPrint(_autherized);
     if (authenticated) {
       txtUserNameController.text = await AppSettings.readLastLoggedUser();
       txtPasswordController.text = await AppSettings.readLastLoggedPassword();
@@ -188,6 +216,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      Spacer(),
                       Material(
                         borderRadius: BorderRadius.all(Radius.circular(25.0)),
                         elevation: 5.0,
@@ -229,7 +258,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       Visibility(
                         visible: !isLoading,
                         child: Padding(
-                          padding: EdgeInsets.only(left: 50, right: 50),
+                          padding: const EdgeInsets.only(left: 50, right: 50),
                           child: Material(
                             elevation: 20,
                             borderRadius: BorderRadius.circular(40),
@@ -259,11 +288,18 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         child: IconButton(
                             iconSize: 70,
                             onPressed: _authenticate,
-                            color: Colors.blue,
+                            color: fingerIconColor,
                             icon: Icon(Icons.fingerprint_outlined)),
                         visible: AppParameters.canCheckBiometric,
                       ),
                       Text(formMessage,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppSettings.formsForegroundColor,
+                            fontSize: AppSettings.messageBodyFontSize,
+                          )),
+                      Spacer(),
+                      Text(AppVersion,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppSettings.formsForegroundColor,
@@ -370,6 +406,23 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   void doLogin([int loginType = 1]) async {
     AppParameters.pausedSeconds = 0;
+    Permission smsPermission = Permission.sms;
+
+    if (await smsPermission.isGranted) {
+      // Navigator.pop(context);
+    } else {
+      await Permission.sms.request();
+    }
+
+    if (await Permission.sms.isRestricted) {
+      if (await Permission.sms.request().isGranted) {
+        // Either the permission was already granted before or the user just granted it.
+      } else {
+        Navigator.pop(context);
+      }
+    }
+
+/*
     PermissionStatus permission =
         await PermissionHandler().checkPermissionStatus(PermissionGroup.sms);
     if (permission.value == 0) {
@@ -380,7 +433,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     }
     if (permission.value == 0) {
       Navigator.pop(context);
-    }
+    }*/
     setState(() {
       isLoading = true;
       AppParameters.currentUser =
@@ -398,12 +451,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         AppParameters.firstName = result[1];
         AppParameters.lastName = result[2];
         AppParameters.prefix = result[3] == "True" ? "آقای" : "خانم";
-        formMessage = AppParameters.prefix +
-            " " +
-            AppParameters.firstName +
-            " " +
-            AppParameters.lastName +
-            " خوش آمدید";
+        formMessage =
+            "${AppParameters.prefix} ${AppParameters.firstName} ${AppParameters.lastName} خوش آمدید";
         AppParameters.reqCount = int.parse(result[5]);
         AppParameters.authenticated = true;
         AppParameters.pausedSeconds = 0;
@@ -412,6 +461,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         Future.delayed(const Duration(seconds: 1), () async {
           AppSettings.saveLastLoggedUser(AppParameters.currentUser);
           AppSettings.saveLastLoggedPassword(AppParameters.currentPassword);
+
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => FriendsPage()));
           AppParameters.currentPage = "LoginPage";

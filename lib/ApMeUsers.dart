@@ -178,7 +178,7 @@
 //     //var client = await AppDb.db;
 //     int result = await AppDatabase.currentDB.insert(Users.TableName, toMapForDb(),
 //         conflictAlgorithm: ConflictAlgorithm.replace);
-//     print("Insert Result : " + result.toString());
+//     debugPrint("Insert Result : " + result.toString());
 //     return result;
 //   }
 

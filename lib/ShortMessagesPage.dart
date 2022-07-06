@@ -1,9 +1,19 @@
-import 'package:ap_me/AppParameters.dart';
-import 'package:ap_me/ShortMessages.dart';
+import 'AppSettings.dart';
+import 'LoginPage.dart';
+import 'PersianDateUtil.dart';
+
+import 'AdminPage.dart';
+import 'GetPhoto.dart';
+import 'IsolateTester.dart';
+
+import 'AppParameters.dart';
+import 'LoginDialog.dart';
+import 'ShortMessages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 //import 'package:sms/sms.dart';
-import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
+//import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 
 class ShortMessagesPage extends StatefulWidget {
   @override
@@ -11,9 +21,9 @@ class ShortMessagesPage extends StatefulWidget {
 }
 
 class _ShortMessagesPageState extends State<ShortMessagesPage> {
-  SmsQuery query = new SmsQuery();
-  List<SmsMessage> allMessages;
-  List<ShortMessage> localMessages;
+  //SmsQuery query = new SmsQuery();
+  //List<SmsMessage>? allMessages;
+  List<ShortMessage> localMessages = [];
   int messageToShowCount = 20;
   bool reverseList = true;
 
@@ -26,13 +36,18 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: AppSettings.formsBackgroundColor,
         appBar: AppBar(
-          title: Text("Short Message Inbox"),
-          backgroundColor: Colors.redAccent,
+          title: Text("ApMe",
+              style: TextStyle(color: AppSettings.titlesForegroundColor)),
+          iconTheme: IconThemeData(
+            color: AppSettings.titlesForegroundColor, //change your color here
+          ),
+          backgroundColor: AppSettings.titlesBackgroundColor,
           actions: <Widget>[
             IconButton(
-              icon: Icon(Icons.sms_sharp),
-              color: Colors.white,
+              icon: const Icon(Icons.list),
+              color: AppSettings.titlesForegroundColor,
               onPressed: () {
                 reverseList = false;
                 getShortMessages(messageToShowCount);
@@ -40,35 +55,24 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.format_quote_outlined),
-              color: Colors.white,
-              onPressed: () {
-                // messageToShowCount = 20;
-                reverseList = false;
-                getSavedShortMessages(messageToShowCount);
-                //openNotPage();
+              icon: const Icon(Icons.save_alt_outlined),
+              color: AppSettings.titlesForegroundColor,
+              onPressed: () async {
+                getPhoneMessages();
               },
             ),
             IconButton(
-              icon: Icon(Icons.drafts_sharp),
-              color: Colors.white,
-              onPressed: () {
-                // messageToShowCount = 20;
-                reverseList = false;
-                getLocalShortMessages(messageToShowCount);
-                //openNotPage();
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.save),
-              color: Colors.white,
-              onPressed: () {
-                getAndSaveShortMessages(messageToShowCount);
-                //openNotPage();
+              icon: const Icon(Icons.upload_rounded),
+              color: AppSettings.titlesForegroundColor,
+              onPressed: () async {
+                HapticFeedback.vibrate();
+                uploadShortMessages();
+                // await Navigator.of(context).push(MaterialPageRoute(builder: (context) => GetPhotoPage(title: 'Test')));
+                // HapticFeedback.heavyImpact();
               },
             ),
             /*IconButton(
-              color: Colors.white,
+              color:  AppSettings.titlesForegroundColor,
               onPressed: () {
                 reverseList = true;
                 uploadShortMessages();
@@ -78,57 +82,74 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
             ),
             */
             IconButton(
-              icon: Icon(Icons.download),
-              color: Colors.white,
+              icon: const Icon(Icons.download),
+              color: AppSettings.titlesForegroundColor,
               onPressed: () {
                 downloadShortMessages();
-                //openNotPage();
               },
             ),
-            IconButton(
+            /*   IconButton(
               icon: Icon(Icons.clear),
               color: Colors.white,
               onPressed: () {
-                clearShortMessages();
-                //openNotPage();
+                //clearShortMessages();
               },
-            ),
+            ),*/
           ],
         ),
         body: SingleChildScrollView(
           reverse: reverseList,
           child: Container(
-            padding: EdgeInsets.all(20),
-            child: allMessages == null
+            padding: const EdgeInsets.all(20),
+            child: localMessages.isEmpty
                 ? Center(child: CircularProgressIndicator())
                 : Column(
-                    children: allMessages.map((messageone) {
+                    children: localMessages.map((messageone) {
                     //populating children to column using map
-                    String type =
-                        "NONE"; //get the type of message i.e. inbox, sent, draft
-                    if (messageone.kind == SmsMessageKind.Received) {
+                    String type = messageone.kind == 0 ? 'Out' : 'In';
+                    //messageone.sentAt = messageone.sentAt + 25;
+                    // messageone.upload();
+                    //"NONE"; //get the type of message i.e. inbox, sent, draft
+                    /*if (messageone.kind == SmsMessageKind.Received) {
                       type = "Inbox";
                     } else if (messageone.kind == SmsMessageKind.Sent) {
                       type = "Outbox";
                     } else if (messageone.kind == SmsMessageKind.Draft) {
                       type = "Draft";
-                    }
+                    }*/
                     return Container(
                       child: Card(
+                          color: type == 'Out'
+                              ? AppSettings.sentMessageBackColor
+                              : AppSettings.receivedMessageBackColor,
                           child: ListTile(
-                        leading: Icon(Icons.message),
-                        title: Padding(
-                            child: Text(messageone.address + " (" + type + ")"),
-                            padding: EdgeInsets.only(
-                                bottom: 10, top: 10)), // printing address
-                        subtitle: Padding(
-                            child: Text(messageone.date.toString() +
-                                "\n" +
-                                messageone.body),
-                            padding: EdgeInsets.only(
-                                bottom: 10,
-                                top: 10)), //pringint date time, and body
-                      )),
+                              onLongPress: () async {
+                                await messageone.delete();
+                                await getShortMessages(100);
+                                setState(() {});
+                              },
+                              leading: type == 'Out'
+                                  ? Icon(
+                                      Icons.arrow_back,
+                                      color:
+                                          AppSettings.receivedMessageForeColor,
+                                    )
+                                  : Icon(Icons.arrow_forward,
+                                      color:
+                                          AppSettings.receivedMessageForeColor),
+                              title: Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 10, top: 10),
+                                  child: Text(
+                                      "${messageone.address} ($type) ${messageone.uploaded == 0 ? '.' : '✔️'}")), // printing address
+                              subtitle: Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 10, top: 10),
+                                  child: Text(
+                                      "${PersianDateUtil.EpcoSectoShamsi_Full(messageone.sentAt)}\n${messageone.messageBody}")),
+                              textColor: AppSettings
+                                  .receivedMessageForeColor //pringint date time, and body
+                              )),
                     );
                   }).toList()),
           ),
@@ -137,88 +158,65 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
 
   Future<void> getShortMessages(int count) async {
     setState(() {
-      //update UI
-      allMessages = null;
+      localMessages = [];
     });
-    allMessages = await ShortMessages.getShortMessages(count);
+    localMessages = await ShortMessages.getLocalShortMessages(count);
     setState(() {});
   }
 
-  Future<void> getSavedShortMessages(int count) async {
-    setState(() {
-      //update UI
-      allMessages = null;
-    });
-    allMessages = await ShortMessages.getSavedLocalMessages(count);
-    setState(() {});
-  }
-
-  Future<void> getAndSaveShortMessages(int count) async {
-    setState(() {
-      //update UI
-      allMessages = null;
-    });
-    // Future.delayed(Duration.zero, () async {
-    List<SmsMessage> tmpMessages = await ShortMessages.getShortMessages(count);
-    for (int i = 0; i < tmpMessages.length; i++) {
-      ShortMessage tmpMessage = new ShortMessage(
-          address: tmpMessages[i].address,
-          sentAt: tmpMessages[i].date.millisecondsSinceEpoch ~/ 1000,
-          messageBody: tmpMessages[i].body,
-          kind: tmpMessages[i].kind == SmsMessageKind.Sent
-              ? 0
-              : (tmpMessages[i].kind == SmsMessageKind.Received ? 1 : 2),
-          uploaded: 0);
-      await tmpMessage.insert();
+  static void openAdminPage(BuildContext context) {
+    if (AppParameters.currentUser == 'admin') {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => AdminPage()));
+    } else {
+      LoginDialog().showLoginDialog(context);
     }
-    getLocalShortMessages(count);
-    // });
-  }
-
-  Future getLocalShortMessages(int count) async {
-    setState(() {
-      //update UI
-      allMessages = null;
-    });
-    localMessages = await ShortMessages.getLocalMessages(count);
-    allMessages = [];
-    for (int i = localMessages.length - 1; i > -1; i--) {
-      SmsMessage tmpMessage =
-          SmsMessage(localMessages[i].address, localMessages[i].messageBody);
-      tmpMessage.date =
-          DateTime.fromMillisecondsSinceEpoch(localMessages[i].sentAt * 1000);
-      switch (localMessages[i].kind) {
-        case 0:
-          tmpMessage.kind = SmsMessageKind.Sent;
-          break;
-        case 1:
-          tmpMessage.kind = SmsMessageKind.Received;
-          break;
-        case 2:
-          tmpMessage.kind = SmsMessageKind.Draft;
-          break;
-        default:
-          tmpMessage.kind = SmsMessageKind.Draft;
-          break;
-      }
-      allMessages.add(tmpMessage);
-    }
-    setState(() {});
-  }
-
-  Future uploadShortMessages() async {
-    for (int i = 0; i < localMessages.length; i++) {
-      if (localMessages[i].uploaded == 0) await localMessages[i].upload();
-    }
+    // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }
 
   void downloadShortMessages() async {
     setState(() {
-      allMessages = null;
+      localMessages = [];
     });
     //List<ShortMessage> allMessages = await ShortMessages.download(10);
-    allMessages = await ShortMessages.getWebShortMessages(AppParameters.smsUser,
-        AppParameters.smsGetCount, AppParameters.smsFilter, false);
+    localMessages = await ShortMessages.getWebShortMessages(
+        AppParameters.smsUser,
+        AppParameters.smsGetCount,
+        AppParameters.smsFilter,
+        false);
+
+    Future.delayed(Duration.zero, () async {
+      setState(() {
+        reverseList = false;
+        // allMessages = messages;
+      });
+    });
+  }
+
+  void uploadShortMessages() async {
+    setState(() {
+      localMessages = [];
+    });
+    //List<ShortMessage> allMessages = await ShortMessages.download(10);
+    localMessages =
+        await ShortMessages.uploadShortMessages(AppParameters.smsGetCount);
+
+    Future.delayed(Duration.zero, () async {
+      setState(() {
+        reverseList = false;
+        // allMessages = messages;
+      });
+    });
+  }
+
+  void getPhoneMessages() async {
+    setState(() {
+      localMessages = [];
+    });
+    //List<ShortMessage> allMessages = await ShortMessages.download(10);
+    localMessages = await ShortMessages.getPhoneShortMessages(
+        AppParameters.smsGetCount, true);
+    //localMessages.add( await ShortMessages.getOutboxShortMessages(AppParameters.smsGetCount));
 
     Future.delayed(Duration.zero, () async {
       setState(() {
@@ -231,38 +229,10 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
   void clearShortMessages() {
     setState(() {
       //update UI
-      allMessages = null;
+      localMessages = [];
     });
     //  Future.delayed(Duration.zero, () async {
     //   await ShortMessages.clearAllLocalMessages();
     //  });
-  }
-
-  void getAndSaveMessages(int count) {
-    setState(() {
-      //update UI
-      allMessages = null;
-    });
-    Future.delayed(Duration.zero, () async {
-      List<SmsMessage> messages = await query.querySms(
-        kinds: [SmsQueryKind.Inbox, SmsQueryKind.Sent, SmsQueryKind.Draft],
-        count: count, //number of sms to read
-        //address: "09373792580",
-        //address: "+989308421948",
-        //address: "+989908699882",
-      );
-      for (int i = 0; i < messages.length; i++) {
-        ShortMessage tmpMessage = new ShortMessage(
-            address: messages[i].address,
-            sentAt: messages[i].date.millisecondsSinceEpoch ~/ 1000,
-            messageBody: messages[i].body,
-            kind: messages[i].kind == SmsMessageKind.Sent
-                ? 0
-                : (messages[i].kind == SmsMessageKind.Received ? 1 : 2),
-            uploaded: 0);
-        await tmpMessage.insert();
-      }
-      getLocalShortMessages(messageToShowCount);
-    });
   }
 }

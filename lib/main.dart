@@ -1,40 +1,55 @@
-import 'package:ap_me/ShortMessagesPage.dart';
+import 'SplashScreen.dart';
+
+import 'AppDatabase.dart';
+import 'AppParameters.dart';
+
+import 'AP_Utils.dart';
+import 'AppSettings.dart';
+import 'ShortMessages.dart';
+import 'ShortMessagesPage.dart';
+import 'GetPhoto.dart';
+import 'Switchboard.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:telephony/telephony.dart';
 
-import 'AppDatabase.dart';
-import 'AppSettings.dart';
-import 'ShortMessages.dart';
-
 onBackgroundMessage(SmsMessage message) {
-  String _messageToShow = "onBackgroundMessage called";
+  String messageToShow = "onBackgroundMessage called";
 
   saveMessage(message);
-  _messageToShow += "\n\n";
-  _messageToShow += message.address ?? "Error reading message address.";
-  _messageToShow += message.body ?? "Error reading message body.";
-  debugPrint(_messageToShow);
+  messageToShow += "\n\n";
+  messageToShow += message.address ?? "Error reading message address.";
+  messageToShow += message.body ?? "Error reading message body.";
+  debugPrint(messageToShow);
 }
 
 Future<int> saveMessage(SmsMessage message) async {
-  await AppDatabase.initDatabase();
   ShortMessage tmpMessage = ShortMessage(
-      address: message.address,
-      sentAt: (message.date) ~/
+      address: message.address!,
+      sentAt: (message.date!) ~/
           1000, // DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      messageBody: message.body,
-      kind: 1,
+      messageBody: message.body!,
+      kind: message.type == SmsType.MESSAGE_TYPE_OUTBOX
+          ? 0
+          : message.type == SmsType.MESSAGE_TYPE_INBOX
+              ? 1
+              : message.type == SmsType.MESSAGE_TYPE_DRAFT
+                  ? 2
+                  : 9,
       uploaded: 0);
-  return await tmpMessage.insert();
+  await AppDatabase.initDatabase();
+  AppParameters.currentUser = await AppSettings.readLastLoggedUser();
+  AppParameters.currentPassword = await AppSettings.readLastLoggedPassword();
+  await tmpMessage.insert();
+  return await tmpMessage.upload();
 }
 
-void main() {
-  init();
+void main() async {
+  await init();
   runApp(MyApp());
 }
 
-void init() async {
+Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();
 //  await AppParameters.initialize();
 //this can be done on the splash screen(while waiting)
@@ -52,7 +67,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _message;
+  String _message = "";
   final telephony = Telephony.instance;
 
   @override
@@ -63,7 +78,7 @@ class _MyAppState extends State<MyApp> {
 
   onMessage(SmsMessage message) async {
     setState(() {
-      _message = message.body;
+      _message = message.body!;
       saveMessage(message);
     });
   }
@@ -81,7 +96,7 @@ class _MyAppState extends State<MyApp> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
 
-    final bool result = await telephony.requestPhoneAndSmsPermissions;
+    final bool result = await telephony.requestPhoneAndSmsPermissions ?? false;
 
     if (result) {
       telephony.listenIncomingSms(
@@ -93,30 +108,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: ShortMessagesPage()
-        /*     Scaffold(
-      appBar: AppBar(
-        title: const Text('Plugin example app'),
+    return Listener(
+      onPointerDown: (_) => _resetTimer('down'),
+      onPointerMove: (_) => _resetTimer('move'),
+      onPointerUp: (_) => _resetTimer('up'),
+      onPointerSignal: (_) => _resetTimer('Signal'),
+      child: MaterialApp(
+        theme: ThemeData(
+            primarySwatch: Colors.grey, scaffoldBackgroundColor: Colors.grey),
+        debugShowCheckedModeBanner: false,
+        home: const SplashScreen(),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(child: Text("Latest received SMS: $_message")),
-          TextButton(
-              onPressed: () async {
-                await telephony.openDialer('123456789');
-              },
-              child: Text('Open Dialer')),
-          IconButton(
-            icon: Icon(Icons.message_outlined),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => ShortMessagesPage()));
-            },
-          )
-        ],
-      ),
-    ) */
-        );
+    );
+  }
+}
+
+void _resetTimer(String userAction) {
+  // debugPrint(userAction);
+  if (userAction == "down") {
+    AppParameters.lastUserActivity = DateTime.now();
   }
 }

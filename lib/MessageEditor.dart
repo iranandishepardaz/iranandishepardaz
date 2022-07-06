@@ -1,4 +1,4 @@
-import 'package:ap_me/ApcoUtils.dart';
+import 'ApcoUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'AdminPage.dart';
@@ -10,7 +10,7 @@ class MessageEditor {
   final messageBodyTextController = TextEditingController();
   final txtformMessageController = TextEditingController();
   static ApMeMessage currentMessage = ApMeMessage();
-  static BuildContext currentContext;
+  static late BuildContext currentContext;
   String contentText = "شروع";
   bool done = false;
   Key result = Key("Start");
@@ -229,7 +229,8 @@ class MessageEditor {
     int count = messageBodyTextController.text.split('\n').length;
     if (count < 6) {
       //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
-      var newHeight = (count + 1) * 2 * AppSettings.messageBodyFontSize;
+      double newHeight =
+          ((count + 1) * 2 * AppSettings.messageBodyFontSize) as double;
       // setState(() {
       _inputHeight = newHeight;
       //});
@@ -243,7 +244,7 @@ class MessageEditor {
       return ResultEnums.Cancelled;
     currentMessage.messageBody = messageBodyTextController.text;
     if (currentMessage.messageBody.length == 0) return await deleteMessage();
-    ApMeMessage editedMessage = await ApMeMessages.editMessage(currentMessage);
+    ApMeMessage? editedMessage = await ApMeMessages.editMessage(currentMessage);
     if (editedMessage != null) {
       await editedMessage.update();
       return ResultEnums.OK_Editted;
@@ -258,7 +259,7 @@ class MessageEditor {
       return ResultEnums.Cancelled;
     currentMessage.messageBody = messageBodyTextController.text;
     if (currentMessage.messageBody.length == 0) return await deleteMessage();
-    ApMeMessage editedMessage =
+    ApMeMessage? editedMessage =
         await ApMeMessages.editDeliveredMessage(currentMessage);
     if (editedMessage != null) {
       await editedMessage.update();
@@ -273,7 +274,7 @@ class MessageEditor {
         currentContext, "آیا از حذف این پیام اطمینان دارید؟",
         yesKeyText: "آری");
     if (output == ResultEnums.Yes) {
-      ApMeMessage messageToDelete =
+      ApMeMessage? messageToDelete =
           await ApMeMessages.deleteMessage(currentMessage);
 
       if (messageToDelete != null) {
@@ -295,7 +296,7 @@ class MessageEditor {
 
   Future<ResultEnums> deleteMessage1() async {
     ResultEnums output = ResultEnums.Unknown;
-    AlertDialog dialog = new AlertDialog(
+    AlertDialog dialog = AlertDialog(
       backgroundColor: AppSettings.titlesBackgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -372,7 +373,7 @@ class MessageEditor {
                   icon: Icon(Icons.delete_forever),
                   color: AppSettings.formsForegroundColor,
                   onPressed: () async {
-                    ApMeMessage messageToDelete =
+                    ApMeMessage? messageToDelete =
                         await ApMeMessages.deleteMessage(currentMessage);
 
                     if (messageToDelete != null) {
@@ -391,8 +392,8 @@ class MessageEditor {
                 ),
                 IconButton(
                   onPressed: () {
+                    output = ResultEnums.Cancelled;
                     Navigator.of(currentContext).pop();
-                    return ResultEnums.Cancelled;
                   },
                   icon: Icon(
                     Icons.undo,
@@ -413,7 +414,7 @@ class MessageEditor {
   }
 
   Future<ResultEnums> deleteDeliveredMessage() async {
-    ApMeMessage messageToDelete =
+    ApMeMessage? messageToDelete =
         await ApMeMessages.deleteDeliveredMessage(currentMessage);
     if (messageToDelete != null) {
       await messageToDelete.delete();

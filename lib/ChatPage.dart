@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ap_me/ApcoUtils.dart';
-import 'package:ap_me/ChatPageAppBar.dart';
-import 'package:ap_me/FriendsPageDrawer.dart';
-import 'package:ap_me/MessageBubble.dart';
-import 'package:ap_me/MessageEditor.dart';
-import 'package:ap_me/PersianDateUtil.dart';
-import 'package:ap_me/TempMessages.dart';
+import 'ApcoUtils.dart';
+import 'ChatPageAppBar.dart';
+import 'FriendsPageDrawer.dart';
+import 'MessageBubble.dart';
+import 'MessageEditor.dart';
+import 'PersianDateUtil.dart';
+import 'TempMessages.dart';
 import 'AppParameters.dart';
 import 'package:flutter/material.dart';
 import 'ApMeMessages.dart';
@@ -23,21 +23,20 @@ class ChatPage extends StatefulWidget {
 
 class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   String textToSend = "";
-  RestartableTimer _refreshTimer;
-  final dataKey = new GlobalKey();
+  RestartableTimer? _refreshTimer;
+  final dataKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
   List<ApMeMessage> allMessages = [];
-  int messagesToShowCount = 35;
-  List<MessageBubble> allMessageBubbles;
+  int messagesToShowCount = 30;
+  late List<MessageBubble> allMessageBubbles;
   List<TempMessage> tempMessages = [];
   final messageBodyTextController = TextEditingController();
-  ApMeMessage currentMessage;
+  ApMeMessage? currentMessage;
   int currentBubbleId = -1;
   int charCount = 0;
   bool isLoading = false;
   bool isEditing = false;
-  bool canSendImage =
-      false; // AppParameters.currentUser == 'akbar' || AppParameters.currentUser == 'sepehr';
+  bool canSendImage = AppParameters.currentUser == 'sepehr';
   @override
   void initState() {
     super.initState();
@@ -50,6 +49,24 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     messageBodyTextController.addListener(_adjustMessageBodyTextField);
     _refreshTimer =
         RestartableTimer(AppParameters.chatRefreshPeriod, refreshMessages);
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        if (_scrollController.position.pixels == 0) {
+          //  getUnsynced();
+          debugPrint('Grid scroll at top');
+        } else {
+          debugPrint('Grid scroll at bottom');
+          debugPrint("${PersianDateUtil.now()} Refresh by pull ...");
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(seconds: 1),
+            curve: Curves.fastOutSlowIn,
+          );
+          messagesToShowCount += 20;
+          getUnsynced();
+        }
+      }
+    });
     refreshMessages();
   }
 
@@ -60,7 +77,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void backToFriendsPage() {
     try {
-      _refreshTimer.cancel();
+      _refreshTimer!.cancel();
     } catch (exp) {}
     try {
       Navigator.of(context).pop();
@@ -76,9 +93,10 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     return WillPopScope(
       onWillPop: _onWillPopSimple,
       child: RefreshIndicator(
+          triggerMode: RefreshIndicatorTriggerMode.anywhere,
           onRefresh: () {
-            print(PersianDateUtil.now() + " Refresh by pull ...");
-            getUnsynced();
+            debugPrint(PersianDateUtil.now() + " Refresh by pull ...");
+            //   getUnsynced();
             return Future.delayed(Duration(seconds: 2), () {});
           },
           child: Scaffold(
@@ -99,9 +117,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                 isLoading = true;
                               });
                               int timeLimit = 0;
-                              print("load more messages from web");
+                              debugPrint("load more messages from web");
                               //must first gret local messages
-                              timeLimit = allMessages.length > 0
+                              timeLimit = allMessages.isNotEmpty
                                   ? allMessages[0].sentAt
                                   : 0;
                               List<ApMeMessage> tmpMessages = await ApMeMessages
@@ -138,10 +156,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                         child: ListView(
                           controller: _scrollController,
                           reverse: true,
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: 10.0, vertical: 20.0),
-                          children: (allMessages == null ||
-                                  allMessages.length == 0)
+                          children: allMessages.isEmpty
                               ? [
                                   IconButton(
                                     onPressed: () async {
@@ -149,7 +166,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                           .getPartnerMessagesBeforeFromWeb(
                                               messagesToShowCount, false, 0);
                                     },
-                                    icon: Icon(Icons.download),
+                                    icon: const Icon(Icons.download),
                                     color: AppSettings.formsForegroundColor,
                                   ),
                                   Center(
@@ -167,14 +184,14 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                         ),
                         onNotification: (notification) {
                           //How many pixels scrolled from pervious frame
-                          print("Scroll Delta:" +
+                          debugPrint("Scroll Delta:" +
                               notification.scrollDelta.toString());
 
                           //List scroll position
-                          print("Scroll Pixels:" +
+                          debugPrint("Scroll Pixels:" +
                               notification.metrics.pixels.toString());
-                          if (notification.metrics.pixels < 1) {
-                            messagesToShowCount += 20;
+                          if (notification.metrics.pixels > 50) {
+                            //    messagesToShowCount += 20;
                           }
                           return true;
                         },
@@ -255,7 +272,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                       onPressed: () {
                                         sendFileMessage();
                                       },
-                                      child: Icon(Icons.attach_file))),
+                                      child: Icon(Icons.attach_file,
+                                          color: AppSettings
+                                              .titlesForegroundColor))),
                             ),
                             Expanded(
                                 flex: 10,
@@ -319,7 +338,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     });
   }
 
-  double _inputHeight = (4 * AppSettings.messageBodyFontSize);
+  double _inputHeight = (4 * AppSettings.messageBodyFontSize) as double;
 
   void _adjustMessageBodyTextField() async {
     AppParameters.lastUserActivity = DateTime.now();
@@ -331,8 +350,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
     if (lines > 6) lines = 6;
     //var newHeight = count == 0 ? 40.0 : 40.0 + (count * _lineHeight);
-    var newHeight = lines * AppSettings.messageBodyFontSize +
-        (AppSettings.messageBodyFontSize * 0.75);
+    double newHeight = (lines * AppSettings.messageBodyFontSize +
+        (AppSettings.messageBodyFontSize * 0.75)) as double;
     if (_inputHeight != newHeight || charCount > 100)
       setState(() {
         _inputHeight = newHeight;
@@ -349,13 +368,13 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     ResultEnums result = ResultEnums.Unknown;
 
     await MessageEditor()
-        .messageEditor(currentMessage, this.context)
+        .messageEditor(currentMessage!, this.context)
         .then((value) async {
       String strValue = value.toString();
       strValue = strValue.substring(
           strValue.indexOf("'") + 1, strValue.lastIndexOf("'"));
       result = strValue.toResultEnm();
-      print("Dialog result:" + value.toString());
+      debugPrint("Dialog result:" + value.toString());
       switch (result) {
         case ResultEnums.OK_Editted:
           setState(() {
@@ -402,30 +421,30 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void refreshMessages() async {
     if (AppParameters.currentPage != "ChatPage") {
-      _refreshTimer.cancel();
-      print(PersianDateUtil.now() + " Chat page Refreshing terminated.");
+      _refreshTimer!.cancel();
+      debugPrint(PersianDateUtil.now() + " Chat page Refreshing terminated.");
     } else {
       if (isLoading) {
-        print(PersianDateUtil.now() + " Chat page Refreshing cancelled.");
+        debugPrint(PersianDateUtil.now() + " Chat page Refreshing cancelled.");
       } else {
         await getUnsynced();
       }
-      _refreshTimer.reset();
+      _refreshTimer!.reset();
     }
   }
 
   Future<void> getUnsynced() async {
     isLoading = true;
-    print(PersianDateUtil.now() + " Chat page Refreshing...");
+    debugPrint(PersianDateUtil.now() + " Chat page Refreshing...");
     setState(() {});
     await ApMeMessages.getUnsyncedMessagesFromWeb();
     allMessages =
         await ApMeMessages.getLocalFriendMessages(messagesToShowCount);
     await generateBubbles();
     setState(() {
-      print(PersianDateUtil.now() + " Chat page Refreshed.");
+      debugPrint(PersianDateUtil.now() + " Chat page Refreshed.");
     });
-    _refreshTimer.reset();
+    _refreshTimer!.reset();
     setState(() {
       isLoading = false;
     });
@@ -448,7 +467,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       //if (currentMessagesCount < allMessages.length)
       generateBubbles();
-      print(PersianDateUtil.now() + " More messages got from web.");
+      debugPrint(PersianDateUtil.now() + " More messages got from web.");
     });
   }
 
@@ -465,7 +484,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     setState(() {
       //if (currentMessagesCount < allMessages.length)
       generateBubbles();
-      print(PersianDateUtil.now() + " More messages got from web.");
+      debugPrint(PersianDateUtil.now() + " More messages got from web.");
     });
   }
 
@@ -485,7 +504,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     //await ApMeMessages.getWebUnsyncedMessages();
     setState(() {
       isLoading = false;
-      print(PersianDateUtil.now() + " Chat page refresh done.");
+      debugPrint(PersianDateUtil.now() + " Chat page refresh done.");
     });
     //_startTimer();
   }
@@ -494,7 +513,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     allMessages =
         await ApMeMessages.getLocalFriendMessages(messagesToShowCount);
     allMessageBubbles = List.generate(allMessages.length, (int index) {
-      return new MessageBubble(allMessages[index], this, dataKey, index, () {});
+      return MessageBubble(allMessages[index], this, dataKey, index, () {});
     });
     setState(() {});
 
@@ -508,8 +527,9 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     String tmpText = textToSend;
     textToSend = "";
     currentMessage = allMessageBubbles[currentBubbleId].currentMessage;
-    currentMessage.messageBody = tmpText;
-    ApMeMessage editedMessage = await ApMeMessages.editMessage(currentMessage);
+    currentMessage!.messageBody = tmpText;
+    ApMeMessage? editedMessage =
+        await ApMeMessages.editMessage(currentMessage!);
     messageBodyTextController.clear();
 
     if (editedMessage != null) {
@@ -535,8 +555,8 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     isEditing = false;
     textToSend = "";
     currentMessage = allMessageBubbles[currentBubbleId].currentMessage;
-    ApMeMessage deletedMessage =
-        await ApMeMessages.deleteMessage(currentMessage);
+    ApMeMessage? deletedMessage =
+        await ApMeMessages.deleteMessage(currentMessage!);
     messageBodyTextController.clear();
 
     if (deletedMessage != null) {
@@ -556,7 +576,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     String tmpText = textToSend;
     textToSend = "";
     isLoading = true;
-    ApMeMessage sentMessage = await ApMeMessages.sendTextMessage(tmpText);
+    ApMeMessage? sentMessage = await ApMeMessages.sendTextMessage(tmpText);
     // messageBodyTextController.text = ""; //.clear();
 
     if (sentMessage != null) {
@@ -604,7 +624,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     return true;
   }
 
-  Future<File> file;
+  //late final file;
 
   void sendFileMessage() async {
     //if (textToSend.length == 0) return deleteTextMessage();
@@ -614,19 +634,38 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     textToSend = "";
     isLoading = true;
     if (tmpText == "") tmpText = "عکس";
-    File file = await ImagePicker.pickImage(source: ImageSource.gallery);
+    File _image;
+    final picker = ImagePicker();
+    final PickedFile? pickedFile =
+        await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+    final File file = File(pickedFile!.path);
     String fileType = file.path.split('.').last;
     String base64Image = base64Encode(file.readAsBytesSync());
-    ApMeMessage sentMessage =
+    ApMeMessage? sentMessage =
+        await ApMeMessages.sendFileMessage(tmpText, fileType, base64Image);
+    /*
+    final picker = ImagePicker();
+    final file = await picker.getImage(source: ImageSource.gallery);
+    String fileType = file!.path.split('.').last;
+    String base64Image = base64Encode(file.readAsBytesSync());
+    ApMeMessage? sentMessage =
         await ApMeMessages.sendFileMessage(tmpText, fileType, base64Image);
     // messageBodyTextController.text = ""; //.clear();
-
+*/
     if (sentMessage != null) {
       allMessages.add(sentMessage);
       await getUnsynced();
       await generateBubbles();
     } else {
-      TempMessage tempMessage = new TempMessage(
+      TempMessage tempMessage = TempMessage(
         messageId: 0,
         fromId: AppParameters.currentUser,
         toId: AppParameters.currentFriendId,

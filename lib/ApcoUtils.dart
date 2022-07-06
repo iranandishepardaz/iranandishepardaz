@@ -3,7 +3,7 @@ import 'AppParameters.dart';
 import 'AppSettings.dart';
 
 class ApcoUtils {
- /* static String formatDateTime(DateTime inputDate, int format) {
+  /* static String formatDateTime(DateTime inputDate, int format) {
     String _output = "";
     try {
       switch (format) {
@@ -37,10 +37,10 @@ class ApcoUtils {
   }
 */
   static void showSnackMessage(String messageToShow, BuildContext context,
-      {int durationSeconds}) {
-    if (durationSeconds == null) {
+      {int durationSeconds = 1}) {
+    /* if (durationSeconds == null) {
       durationSeconds = 1;
-    }
+    }*/
     Duration duration = Duration(seconds: durationSeconds);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
@@ -62,9 +62,9 @@ class ApcoUtils {
 
   static Future<ResultEnums> apcoShowDialog(
       BuildContext buildContext, String dialogTitle,
-      {String yesKeyText, String noKeyText}) async {
+      {String? yesKeyText, String? noKeyText}) async {
     ResultEnums output = ResultEnums.Unknown;
-    AlertDialog dialog = new AlertDialog(
+    AlertDialog dialog = AlertDialog(
       backgroundColor: AppSettings.titlesBackgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),

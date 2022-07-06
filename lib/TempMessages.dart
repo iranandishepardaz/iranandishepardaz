@@ -1,8 +1,8 @@
-import 'package:ap_me/ApMeMessages.dart';
-import 'package:ap_me/ApMeUtils.dart';
-import 'package:ap_me/AppDatabase.dart';
-import 'package:ap_me/AppParameters.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'ApMeMessages.dart';
+import 'ApMeUtils.dart';
+import 'AppDatabase.dart';
+import 'AppParameters.dart';
+//import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -63,7 +63,8 @@ class TempMessages {
     return [];
   }
 
-  static Future<TempMessage> sendTempMessagesToServer(String textToSend) async {
+  static Future<TempMessage?> sendTempMessagesToServer(
+      String textToSend) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "103",
       AppParameters.currentUser,
@@ -79,7 +80,7 @@ class TempMessages {
     }
   }
 
-  static Future<void> clearAllTempMessages() async {
+  static Future<int?> clearAllTempMessages() async {
     //var client = await AppDb.db;
     return await AppDatabase.currentDB.delete(TempMessages.TableName);
   }
@@ -87,37 +88,39 @@ class TempMessages {
 
 class TempMessage {
   @required
-  int messageId;
+  late int messageId;
   @required
-  String fromId;
+  late String fromId;
   @required
-  String toId;
+  late String toId;
   @required
-  String messageBody;
+  late String messageBody;
   @required
-  int sentAt;
-  int deliveredAt;
-  int seenAt;
-  int messageType;
-  String url;
-  int deleted;
-  int uploaded;
-  DateTime _sentAtTime;
+  late int sentAt;
+  @required
+  late int deliveredAt;
+  late int seenAt;
+  late int messageType;
+  late String url;
+  late int deleted;
+  late int uploaded;
+  DateTime? _sentAtTime;
 
   TempMessage({
-    this.messageId,
-    this.fromId,
-    this.toId,
-    this.messageBody,
-    this.sentAt,
-    this.deliveredAt,
-    this.seenAt,
-    this.messageType,
-    this.url,
-    this.deleted,
-    this.uploaded,
-  }) {} //int  intSentAt = ((int.parse(sentAt)/100000) as int )+ 621355968000000000;
-  DateTime getSentAtTime() {
+    this.messageId = 0,
+    this.fromId = "",
+    this.toId = "",
+    this.messageBody = "",
+    this.sentAt = 0,
+    this.deliveredAt = 0,
+    this.seenAt = 0,
+    this.messageType = 0,
+    this.url = "",
+    this.deleted = 0,
+    this.uploaded = 0,
+  }) {}
+  //int  intSentAt = ((int.parse(sentAt)/100000) as int )+ 621355968000000000;
+  DateTime? getSentAtTime() {
     if (_sentAtTime == null)
       _sentAtTime =
           DateTime.fromMillisecondsSinceEpoch((sentAt * 1000) - 62135596800000);
@@ -195,7 +198,7 @@ class TempMessage {
     if (maps.length != 0) {
       return TempMessage.fromDb(maps.first);
     }
-    return null;
+    return TempMessage();
   }
 
   Future<int> insert() async {
@@ -204,7 +207,7 @@ class TempMessage {
     int result = await AppDatabase.currentDB.insert(
         TempMessages.TableName, toMapForDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print("Temp Message Insert Result: " + result.toString());
+    debugPrint("Temp Message Insert Result: " + result.toString());
     return result;
   }
 
@@ -217,7 +220,7 @@ class TempMessage {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> delete() async {
+  Future<int?> delete() async {
     //var client = await AppDb.db;
     return await AppDatabase.currentDB.delete(TempMessages.TableName,
         where: 'messageId = ? And fromId = ?', whereArgs: [messageId, fromId]);

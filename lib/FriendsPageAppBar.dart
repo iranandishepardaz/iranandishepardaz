@@ -1,4 +1,4 @@
-import 'package:ap_me/FriendsPage.dart';
+import 'FriendsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'AppParameters.dart';
@@ -49,7 +49,7 @@ class FriendsAppBar {
                   : Colors.red,
               onPressed: () {
                 // getFriendsAndLastMessages(false);
-                parent.scaffoldKey.currentState.openEndDrawer();
+                parent.scaffoldKey.currentState?.openEndDrawer();
                 //openNotPage();
               },
             ),

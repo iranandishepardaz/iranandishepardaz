@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/FriendsPageDrawer.dart';
-import 'package:ap_me/LoginDialog.dart';
-import 'package:ap_me/OptionsDrawer.dart';
-import 'package:ap_me/ShortMessages.dart';
+import 'AppSettings.dart';
+import 'FriendsPageDrawer.dart';
+import 'LoginDialog.dart';
+import 'NotificationTester.dart';
+import 'OptionsDrawer.dart';
+import 'ShortMessages.dart';
 
 import 'Friends.dart';
 import 'AdminPage.dart';
@@ -11,7 +12,7 @@ import 'NotificationTester.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+//Temp Comment import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'AppParameters.dart';
 import 'ChatPage.dart';
 import 'ApMeMessages.dart';
@@ -19,8 +20,7 @@ import 'PersianDateUtil.dart';
 import 'FriendsPageAppBar.dart';
 import 'package:async/async.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+//Temp Comment final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =    FlutterLocalNotificationsPlugin();
 const MethodChannel platform =
     MethodChannel('dexterx.dev/flutter_local_notifications_example');
 
@@ -31,19 +31,19 @@ class FriendsPage extends StatefulWidget {
 
 class FriendsPageState extends State<FriendsPage> {
   List<FriendModel> friendModels = [];
-  List<Friend> _friends;
+  late List<Friend> _friends = [];
   bool isLoading = false;
   bool initialized = false;
   int _newMessagesCount = 0;
   //bool blnTimerInitialized = false;
   //Timer tmrFriendsDataRefresher;
-  RestartableTimer _refreshTimer;
+  late RestartableTimer _refreshTimer;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     // WidgetsBinding.instance.addObserver(this);
-    initNotif();
+    //Temp Comment initNotif();
     super.initState();
     initialize();
     //AppSettings.resetToDefaultSetings();
@@ -71,14 +71,14 @@ class FriendsPageState extends State<FriendsPage> {
     switch (state) {
       case AppLifecycleState.paused:
         AppParameters.pausedTime = DateTime.now();
-        print("FriendsPage status: paused");
+        debugPrint("FriendsPage status: paused");
         try {
           //blnTimerInitialized = false;
           tmrFriendsDataRefresher.cancel();
         } catch (Exception) {}
         break;
       case AppLifecycleState.resumed:
-        print("FriendsPage status: resumed");
+        debugPrint("FriendsPage status: resumed");
         AppParameters.pausedSeconds =
             DateTime.now().difference(AppParameters.pausedTime).inSeconds;
         if (AppParameters.pausedSeconds > AppParameters.pausePermittedSeconds) {
@@ -89,13 +89,13 @@ class FriendsPageState extends State<FriendsPage> {
         }
         break;
       case AppLifecycleState.inactive:
-        print("FriendsPage status: inactive");
+        debugPrint("FriendsPage status: inactive");
         try {
           tmrFriendsDataRefresher.cancel();
         } catch (Exception) {}
         break;
       case AppLifecycleState.detached:
-        print("FriendsPage status: detached");
+        debugPrint("FriendsPage status: detached");
         try {
           tmrFriendsDataRefresher.cancel();
         } catch (Exception) {}
@@ -142,7 +142,7 @@ class FriendsPageState extends State<FriendsPage> {
                             },
                             leading: GestureDetector(
                               onTap: () {
-                                return LoginDialog().showNetworkImage(
+                                LoginDialog().showNetworkImage(
                                     _model.avatarUrl, this.context);
                               },
                               child: CircleAvatar(
@@ -209,7 +209,7 @@ class FriendsPageState extends State<FriendsPage> {
     setState(() {});
   }
 
-/*
+  /*
   void _startRefreshTimer() {
     if (!blnTimerInitialized) {
       blnTimerInitialized = true;
@@ -219,26 +219,27 @@ class FriendsPageState extends State<FriendsPage> {
       });
     }
   }
-*/
+  */
   Future<void> refreshFriends() async {
     if (AppParameters.currentPage != "FriendsPage") {
       _refreshTimer.cancel();
-      print(PersianDateUtil.now() + " FriendsPage Refreshing terminated.");
+      debugPrint(PersianDateUtil.now() + " FriendsPage Refreshing terminated.");
     } else {
       if (isLoading) {
-        print(PersianDateUtil.now() + " FriendsPage Refreshing cancelled.");
+        debugPrint(
+            PersianDateUtil.now() + " FriendsPage Refreshing cancelled.");
       } else {
         if (isLoading) {
-          print(PersianDateUtil.now() +
+          debugPrint(PersianDateUtil.now() +
               " FriendsPage web refreshing Cancelled ...");
           return;
         }
         isLoading = true;
         try {
-          print(PersianDateUtil.now() + " FriendsPage web refreshing ...");
+          debugPrint(PersianDateUtil.now() + " FriendsPage web refreshing ...");
           await getFriendsAndLastMessages(true);
-          int recordsCount = await ApMeMessages.localMessagesCount();
-          if (recordsCount < 10)
+          int? recordsCount = await ApMeMessages.localMessagesCount();
+          if (recordsCount! < 10)
             await ApMeMessages.getWebNewMessages(true);
           else
             await ApMeMessages.getUnsyncedMessagesFromWeb();
@@ -264,12 +265,12 @@ class FriendsPageState extends State<FriendsPage> {
       _friends = await Friends.getLocalFriendsList();
     }*/
     if (AppParameters.newMessagesCount > 0)
-      _showNotification();
-    else
+      //Temp Comment  _showNotification();
+      //Temp Comment else
       _newMessagesCount = 0;
     setState(() {
       isLoading = false;
-      print(PersianDateUtil.now() + " FriendsPage Local refresh done.");
+      debugPrint(PersianDateUtil.now() + " FriendsPage Local refresh done.");
     });
   }
 
@@ -283,7 +284,7 @@ class FriendsPageState extends State<FriendsPage> {
         name: _friends[i].firstName,
         datetime: lastMessage.length > 0
             ? PersianDateUtil.MItoSH_Full(
-                lastMessage[lastMessage.length - 1].getSentAtTime())
+                lastMessage[lastMessage.length - 1].getSentAtTime()!)
             : "-",
         message: lastMessage.length > 0
             ? lastMessage[lastMessage.length - 1].deleted == 0
@@ -323,7 +324,7 @@ class FriendsPageState extends State<FriendsPage> {
   //   }
   //   setState(() {
   //     isLoading = false;
-  //     print(PersianDateUtil.now() + " Chatlist web refresh done.");
+  //     debugPrint(PersianDateUtil.now() + " Chatlist web refresh done.");
   //     _showNotification("آپدیت شد");
   //     //_showNotification();
   //   });
@@ -339,6 +340,7 @@ class FriendsPageState extends State<FriendsPage> {
     _refreshTimer.cancel();
     await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => ChatPage()));
+    // .push(MaterialPageRoute(builder: (context) => FriendPage()));
     if (!AppParameters.authenticated) {
       backToLoginPage();
     } else {
@@ -357,18 +359,17 @@ class FriendsPageState extends State<FriendsPage> {
   final txtPasswordController = TextEditingController();
   String formMessage = "وارد شوید";
   void openMainPage() {
-    if (AppParameters.currentUser == 'admin')
+    if (AppParameters.currentUser == 'admin') {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => AdminPage()));
-    else {
-      return LoginDialog().showLoginDialog(this.context);
+    } else {
+      LoginDialog().showLoginDialog(context);
     }
     // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }
 
-  void openNotPage() {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => NotificationTester()));
+  void openNotifPage() {
+    //Temp Comment Navigator.of(context).push(MaterialPageRoute(builder: (context) => NotificationTester()));
   }
 
 /*
@@ -411,6 +412,9 @@ class FriendsPageState extends State<FriendsPage> {
     await flutterLocalNotificationsPlugin.cancel(0);
   }
 */
+
+//Temp Comment
+/*
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   void initNotif() {
     var androidSpec = new AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -427,6 +431,7 @@ class FriendsPageState extends State<FriendsPage> {
   }
 
   Future onSelectNotification(String payload) async {
+    var context;
     showDialog(
         context: context,
         builder: (_) {
@@ -458,6 +463,7 @@ class FriendsPageState extends State<FriendsPage> {
       },
     );
   }
+*/
 
   void backToLoginPage() {
     try {
@@ -468,9 +474,11 @@ class FriendsPageState extends State<FriendsPage> {
     } catch (exp) {}
   }
 
+//Temp Comment
+/*
   Future _showNotification() async {
-    var androidSpec = new AndroidNotificationDetails(
-        'ApMe', 'Flutter Messenger', 'Ap Messenger',
+    var androidSpec = const AndroidNotificationDetails(
+        'ApMe', 'Flutter Messenger',
         playSound: true, importance: Importance.max, priority: Priority.high);
 
     var iosSpec = new IOSNotificationDetails(presentSound: false);
@@ -489,6 +497,7 @@ class FriendsPageState extends State<FriendsPage> {
     }
     _newMessagesCount = AppParameters.newMessagesCount;
   }
+  */
 }
 
 class FriendModel {
@@ -500,10 +509,10 @@ class FriendModel {
   final String message;
 
   FriendModel(
-      {this.id,
-      this.avatarUrl,
-      this.name,
-      this.lastSeen,
-      this.datetime,
-      this.message});
+      {this.id = "",
+      this.avatarUrl = "",
+      this.name = "",
+      this.lastSeen = "",
+      this.datetime = "",
+      this.message = ""});
 }

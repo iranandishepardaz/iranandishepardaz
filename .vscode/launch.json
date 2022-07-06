@@ -5,15 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ApMe",
+            "name": "apme",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "ApMe (profile mode)",
+            "name": "apme (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
+        },
+        {
+            "name": "apme (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
         }
     ]
 }

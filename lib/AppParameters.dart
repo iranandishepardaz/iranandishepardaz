@@ -17,6 +17,7 @@ enum ResultEnums {
   Cancelled,
   Unknown
 }
+
 ResultEnums valueOf(String value) {
   return ResultEnums.values.where((e) => describeEnum(e) == value).first;
 }
@@ -46,8 +47,8 @@ class AppParameters {
   static String smsUser = "unknown";
   static String smsFilter = "+98";
   static int smsGetCount = 30;
-  static String currentUser = "";
-  static String currentPassword = "";
+  static String currentUser = "admin";
+  static String currentPassword = "Adm1234@dm";
   static String currentFriendId = "";
   static String currentFriendName = "";
   static String currentPage = "";

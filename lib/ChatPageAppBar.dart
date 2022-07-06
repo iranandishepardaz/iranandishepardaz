@@ -1,6 +1,6 @@
-import 'package:ap_me/AppParameters.dart';
-import 'package:ap_me/ChatPage.dart';
-import 'package:ap_me/LoginDialog.dart';
+import 'AppParameters.dart';
+import 'ChatPage.dart';
+import 'LoginDialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //import 'AppParameters.dart';

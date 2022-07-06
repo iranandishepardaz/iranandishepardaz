@@ -1,4 +1,4 @@
-import 'package:ap_me/AppParameters.dart';
+import 'AppParameters.dart';
 import 'package:flutter/widgets.dart';
 
 class LifecycleWatcher extends StatefulWidget {
@@ -10,7 +10,7 @@ class LifecycleWatcher extends StatefulWidget {
 
 class _LifecycleWatcherState extends State<LifecycleWatcher>
     with WidgetsBindingObserver {
-  AppLifecycleState _lastLifecycleState;
+  late AppLifecycleState _lastLifecycleState;
 
   @override
   void initState() {

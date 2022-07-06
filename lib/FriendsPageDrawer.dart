@@ -1,6 +1,6 @@
-import 'package:ap_me/AdminPage.dart';
-import 'package:ap_me/LoginDialog.dart';
-import 'package:ap_me/Themes.dart';
+import 'AdminPage.dart';
+import 'LoginDialog.dart';
+import 'Themes.dart';
 import 'package:flutter/material.dart';
 
 import 'AppParameters.dart';
@@ -18,14 +18,14 @@ class FriendsPageDrawer {
           child: ListView(
             children: <Widget>[
               UserAccountsDrawerHeader(
-                  decoration: new BoxDecoration(
-                    border: new Border.all(
+                  decoration: BoxDecoration(
+                    border: Border.all(
                         color: AppSettings.titlesBackgroundColor, width: 4),
                     color: AppSettings.formsBackgroundColor,
                   ),
                   accountName: Text(
                     "ApMe Messenger ",
-                    style: new TextStyle(
+                    style: TextStyle(
                       color: AppSettings.formsForegroundColor,
                     ),
                   ),
@@ -34,11 +34,11 @@ class FriendsPageDrawer {
                     // "نام‌کاربری" + ":" + "  " + App_Parameters.currentUserName,
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.center,
-                    style: new TextStyle(
+                    style: TextStyle(
                       color: AppSettings.formsForegroundColor,
                     ),
                   ),
-                  currentAccountPicture: CircleAvatar(
+                  currentAccountPicture: const CircleAvatar(
                     backgroundImage: AssetImage("assets/apmeLogo.png"),
                   )),
               ListTile(
@@ -46,7 +46,7 @@ class FriendsPageDrawer {
                 title: Text(
                   "تم",
                   textDirection: TextDirection.rtl,
-                  style: new TextStyle(
+                  style: TextStyle(
                     color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize,
                   ),
@@ -208,11 +208,11 @@ class FriendsPageDrawer {
   }
 
   static void openAdminPage(BuildContext context) {
-    if (AppParameters.currentUser == 'admin')
+    if (AppParameters.currentUser == 'admin') {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => AdminPage()));
-    else {
-      return LoginDialog().showLoginDialog(context);
+    } else {
+      LoginDialog().showLoginDialog(context);
     }
     // .push(MaterialPageRoute(builder: (context) => Tmp()));
   }

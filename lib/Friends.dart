@@ -1,6 +1,6 @@
-import 'package:ap_me/ApMeUtils.dart';
-import 'package:ap_me/AppDatabase.dart';
-import 'package:ap_me/AppParameters.dart';
+import 'ApMeUtils.dart';
+import 'AppDatabase.dart';
+import 'AppParameters.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -64,7 +64,7 @@ class Friends {
 
   static Future<void> clearAllLocalFriends() async {
     //var client = await AppDb.db;
-    return await AppDatabase.currentDB.delete(Friends.TableName);
+    await AppDatabase.currentDB.delete(Friends.TableName);
   }
 }
 
@@ -79,17 +79,17 @@ class Friend {
   final int lastSeen;
 
   Friend({
-    this.friendId,
-    this.firstName,
-    this.lastName,
-    this.lastSeen,
+    this.friendId = "",
+    this.firstName = "",
+    this.lastName = "",
+    this.lastSeen = 0,
   }); // {}
 
-  DateTime _lastSeenTime;
+  DateTime? _lastSeenTime;
   DateTime getLastSeenTime() {
     if (_lastSeenTime == null)
       _lastSeenTime = DateTime.fromMillisecondsSinceEpoch(this.lastSeen * 1000);
-    return _lastSeenTime;
+    return _lastSeenTime!;
   }
 
   String get avatarUrl {
@@ -111,7 +111,7 @@ class Friend {
         lastName = map['lastName'],
         lastSeen = map['lastSeen'];
 
-  Future<Friend> fetchLocal(String friendId) async {
+  Future<Friend?> fetchLocal(String friendId) async {
     //var client = await AppDb.db;
     final Future<List<Map<String, dynamic>>> futureMaps =
         AppDatabase.currentDB.query(
@@ -132,7 +132,7 @@ class Friend {
     int result = await AppDatabase.currentDB.insert(
         Friends.TableName, toMapForDb(),
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print("Friend Insert Result : " + result.toString());
+    debugPrint("Friend Insert Result : " + result.toString());
     return result;
   }
 
@@ -146,7 +146,7 @@ class Friend {
 
   Future<void> delete() async {
     //var client = await AppDb.db;
-    return await AppDatabase.currentDB.delete(Friends.TableName,
+    await AppDatabase.currentDB.delete(Friends.TableName,
         where: 'friendId = ?', whereArgs: [friendId]);
   }
 }

@@ -1,82 +1,143 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_auth_invisible/flutter_local_auth_invisible.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
-class MyApp extends StatelessWidget {
-// This widget is the root of your application.
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _authorized = 'Not Authorized';
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(
+              'Can ${AuthProviderState.biometricsEnabled ? '' : 'not '}'
+              'auth with biometrics',
+            ),
+            Text('Current State: $_authorized\n'),
+            AuthProvider(
+              'hash',
+              onSuccess: () => setState(
+                () => _authorized = 'Authorized',
+              ),
+            ),
+          ],
+        ),
       ),
-      home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class AuthProvider extends StatefulWidget {
+  const AuthProvider(
+    this.pinHash, {
+    this.onFinishChecking,
+    this.onStartChecking,
+    this.onSuccess,
+  });
+  final Function()? onFinishChecking;
+  final Function()? onStartChecking;
+  final Function()? onSuccess;
+  final String pinHash;
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  AuthProviderState createState() => AuthProviderState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final LocalAuthentication _localAuthentication = LocalAuthentication();
-  String _message = "Starting...";
-
-  Future<bool> checkingForBioMetrics() async {
-    bool canCheckBiometrics = await _localAuthentication.canCheckBiometrics;
-    print(canCheckBiometrics);
-    _message = canCheckBiometrics
-        ? "Device support biometrics"
-        : "Device cannot support biometrics";
-    return canCheckBiometrics;
-  }
-
-  Future<void> _authenticateMe() async {
-// 8. this method opens a dialog for fingerprint authentication.
-//    we do not need to create a dialog nut it popsup from device natively.
-    setState(() {
-      _message = "Start Authenticating..";
-    });
-    bool authenticated = false;
-    try {
-      authenticated = await _localAuthentication.authenticateWithBiometrics(
-        localizedReason: "Authenticate for Testing", // message for dialog
-        useErrorDialogs: true, // show error in dialog
-        stickyAuth: true, // native process
-      );
-      setState(() {
-        _message = authenticated ? "Authorized" : "Not Authorized";
-      });
-    } catch (e) {
-      print("Error : $e");
-    }
-    if (!mounted) {
-      print("Error : Not Monted");
-      return;
-    }
-  }
+class AuthProviderState extends State<AuthProvider> {
+  static bool biometricsEnabled = false;
+  bool _biometricsSelected = true;
+  List<BiometricType> _biometricSensors = [];
+  // ignore: unused_field
+  String? _biometricsIcon;
 
   @override
   void initState() {
-    checkingForBioMetrics();
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _init());
+  }
+
+  Future<void> _init() async {
+    _biometricSensors = await LocalAuthentication.getAvailableBiometrics();
+    biometricsEnabled = (await LocalAuthentication.canCheckBiometrics) &&
+        _biometricSensors.isNotEmpty;
+    _biometricsIcon = _biometricSensors.contains(BiometricType.face)
+        ? 'ui.faceId'
+        : 'ui.fingerprint';
+    //biometricsEnabled = true;
+    setState(() {});
+    await _launchScannerSchedule();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-          child: Center(
-        child: Text("$_message"),
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _authenticateMe,
-        child: Icon(Icons.fingerprint),
-      ),
-    );
+  void didUpdateWidget(oldWidget) {
+    _launchScannerSchedule();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          biometricsEnabled && _biometricsSelected
+              ? Text('BiometricsView()')
+              : Text('PinPadView()'),
+          TextButton(
+            onPressed: _toggleView,
+            child: Text('Toggle auth method'),
+          ),
+        ],
+      );
+
+  Future<void> _launchScannerSchedule() async {
+    if (!biometricsEnabled) return;
+
+    await LocalAuthentication.stopAuthentication();
+    await Future.delayed(const Duration(milliseconds: 300), _launchScanner);
+  }
+
+  Future<void> _launchScanner() async {
+    try {
+      while (_biometricsSelected) {
+        final didAuthenticate = await LocalAuthentication.authenticate(
+          localizedReason:
+              'Please pass the biometrical authentication to continue.',
+          stickyAuth: false,
+          useErrorDialogs: true,
+        );
+        if (didAuthenticate) {
+          widget.onSuccess?.call();
+          break;
+        } else {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    } on PlatformException catch (_) {
+      // Report the issue
+    }
+  }
+
+  void _toggleView() {
+    setState(() => _biometricsSelected = !_biometricsSelected);
+    if (_biometricsSelected) {
+      _launchScanner();
+    } else {
+      LocalAuthentication.stopAuthentication();
+    }
   }
 }

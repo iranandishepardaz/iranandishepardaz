@@ -1,5 +1,5 @@
-import 'package:ap_me/ChatPage.dart';
-import 'package:ap_me/FriendsPage.dart';
+import 'ChatPage.dart';
+import 'FriendsPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -247,7 +247,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                           // Card(
                           //   child: new InkWell(
                           //     onTap: () {
-                          //       print("tapped");
+                          //       debugPrint("tapped");
                           //     },
                           //     child: Container(
                           //       width: 70.0,
@@ -270,7 +270,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                                 ),
                                 // new InkWell(
                                 //     onTap: () {
-                                //       print("object");
+                                //       debugPrint("object");
                                 //     },
                                 //   ),
                               ],
@@ -299,8 +299,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Text(
-                                  "  -3%  " + format(_minusTree),
-                                  style: TextStyle(
+                                  "  -3%  ${format(_minusTree)}",
+                                  style: const TextStyle(
                                       color: Colors.red, fontSize: 16),
                                 ),
                               ],
@@ -617,7 +617,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
           endDrawer: Drawer(
             child: ListView(
               children: <Widget>[
-                UserAccountsDrawerHeader(
+                const UserAccountsDrawerHeader(
                     accountName: Text("Trader "),
                     accountEmail: Text(
                       " ",

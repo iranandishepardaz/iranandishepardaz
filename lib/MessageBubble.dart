@@ -1,9 +1,8 @@
-import 'package:ap_me/ApMeMessages.dart';
-import 'package:ap_me/ApcoMessageBox.dart';
-import 'package:ap_me/ApcoUtils.dart';
-import 'package:ap_me/ChatPage.dart';
-import 'package:ap_me/PersianDateUtil.dart';
-import 'package:flutter/cupertino.dart';
+import 'ApMeMessages.dart';
+import 'ApcoMessageBox.dart';
+import 'ApcoUtils.dart';
+import 'ChatPage.dart';
+import 'PersianDateUtil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,7 +40,7 @@ class _MessageBubbleState extends State<MessageBubble> {
           Text(
             widget.currentMessage.uploaded > 0
                 ? PersianDateUtil.MItoSH_Full(widget.currentMessage
-                    .getSentAtTime()) // + PersianDateUtil.MItoSH(widget.currentMessage.getSentAtTime())
+                    .getSentAtTime()!) // + PersianDateUtil.MItoSH(widget.currentMessage.getSentAtTime())
                 : "Does not sent!",
             style: TextStyle(
                 fontSize: AppSettings.messageDateFontSize,

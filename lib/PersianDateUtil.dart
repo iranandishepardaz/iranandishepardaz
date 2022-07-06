@@ -1,5 +1,5 @@
 class PersianDateUtil {
-  static String now([int format]) {
+  static String now([int? format]) {
     if (format == null) format = 1;
     return formatDateTime(DateTime.now(), 1);
   }
@@ -128,6 +128,11 @@ class PersianDateUtil {
         Remind == 22 ||
         Remind == 26 ||
         Remind == 30);
+  }
+
+  static String EpcoSectoShamsi_Full(int secFromEpoch) {
+    DateTime Gr_Date = DateTime.fromMillisecondsSinceEpoch(1000 * secFromEpoch);
+    return MItoSH_Full(Gr_Date);
   }
 
   static String MItoSH_Full(DateTime Gr_Date) {

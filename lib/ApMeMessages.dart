@@ -1,7 +1,7 @@
-import 'package:ap_me/ApMeUtils.dart';
-import 'package:ap_me/AppDatabase.dart';
-import 'package:ap_me/AppParameters.dart';
-import 'package:ap_me/TempMessages.dart';
+import 'ApMeUtils.dart';
+import 'AppDatabase.dart';
+import 'AppParameters.dart';
+import 'TempMessages.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
@@ -41,10 +41,10 @@ class ApMeMessages {
     return [];
   }
 
-  static Future<int> localMessagesCount() async {
+  static Future<int?> localMessagesCount() async {
     //var client = await AppDb.db;
     return Sqflite.firstIntValue(await AppDatabase.currentDB
-        .rawQuery('SELECT COUNT(*) FROM ' + ApMeMessages.TableName));
+        .rawQuery('SELECT COUNT(*) FROM ${ApMeMessages.TableName}'));
   }
 
   static Future<List<ApMeMessage>> getLocalUnuploadedMessages(int count) async {
@@ -89,7 +89,7 @@ class ApMeMessages {
 
   static Future<List<ApMeMessage>> getWebNewMessages(bool saveLocal) async {
     List<ApMeMessage> allMessages = [];
-    int recordsCount = await localMessagesCount();
+    int? recordsCount = await localMessagesCount();
     List<List<String>> records = await ApMeUtils.fetchData([
       recordsCount == 0
           ? "104"
@@ -189,7 +189,7 @@ class ApMeMessages {
 
   static Future<List<ApMeMessage>> syncMessages() async {
     List<ApMeMessage> allMessages = await getLocalUnuploadedMessages(10);
-    if (allMessages.length == 0) return null;
+    if (allMessages.length == 0) return [];
     String parameter4 = "";
     for (int i = 0; i < allMessages.length; i++) {
       parameter4 += allMessages[i].messageId.toString() + ";^;";
@@ -223,7 +223,8 @@ class ApMeMessages {
     return allMessages;
   }
 
-  static Future<ApMeMessage> sendPendingMessage(TempMessage tempMessage) async {
+  static Future<ApMeMessage?> sendPendingMessage(
+      TempMessage tempMessage) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "103",
       AppParameters.currentUser,
@@ -245,7 +246,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> sendTextMessage(String textToSend) async {
+  static Future<ApMeMessage?> sendTextMessage(String textToSend) async {
     TempMessage tempMessage = new TempMessage(
       messageId: 0,
       fromId: AppParameters.currentUser,
@@ -284,7 +285,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> sendFileMessage(
+  static Future<ApMeMessage?> sendFileMessage(
       String textToSend, String fileType, String base64File) async {
     TempMessage tempMessage = new TempMessage(
       messageId: 0,
@@ -325,7 +326,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> editMessage(ApMeMessage messageToEdit) async {
+  static Future<ApMeMessage?> editMessage(ApMeMessage messageToEdit) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "108",
       AppParameters.currentUser,
@@ -343,7 +344,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> editDeliveredMessage(
+  static Future<ApMeMessage?> editDeliveredMessage(
       ApMeMessage messageToEdit) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "208",
@@ -362,7 +363,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> deleteMessage(ApMeMessage messageToDelete) async {
+  static Future<ApMeMessage?> deleteMessage(ApMeMessage messageToDelete) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "109",
       AppParameters.currentUser,
@@ -387,7 +388,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<ApMeMessage> deleteDeliveredMessage(
+  static Future<ApMeMessage?> deleteDeliveredMessage(
       ApMeMessage messageToDelete) async {
     List<List<String>> records = await ApMeUtils.fetchData([
       "209",
@@ -406,7 +407,7 @@ class ApMeMessages {
     }
   }
 
-  static Future<void> clearAllLocalMessages() async {
+  static Future<int> clearAllLocalMessages() async {
     //var client = await AppDb.db;
     return await AppDatabase.currentDB.delete(ApMeMessages.TableName);
   }
@@ -436,7 +437,7 @@ class ApMeMessages {
 
   static Future<List<ApMeMessage>> getLocalFriendLastMessage(
       String friendId) async {
-    //var client = await AppDb.db;
+    //await AppDatabase.checkDatabase();
     var res = await AppDatabase.currentDB.query(
       ApMeMessages.TableName,
       where: '((fromId = ? And toId = ?) OR (toId = ? AND fromId = ?))',
@@ -461,40 +462,42 @@ class ApMeMessages {
 
 class ApMeMessage {
   @required
-  int messageId;
+  late int messageId;
   @required
-  String fromId;
+  late String fromId;
   @required
-  String toId;
+  late String toId;
   @required
-  String messageBody;
+  late String messageBody;
   @required
-  int sentAt = 0;
-  int deliveredAt = 0;
-  int seenAt = 0;
-  int messageType = 0;
-  String url = "";
-  int deleted = 0;
-  int uploaded = 0;
-  int downloaded = 0;
-  DateTime _sentAtTime;
+  late int sentAt;
+  @required
+  late int deliveredAt;
+  late int seenAt;
+  late int messageType;
+  late String url;
+  late int deleted;
+  late int uploaded;
+  late int downloaded = 0;
+  DateTime? _sentAtTime;
+
   bool isEditting = false;
 
   ApMeMessage({
-    this.messageId,
-    this.fromId,
-    this.toId,
-    this.messageBody,
-    this.sentAt,
-    this.deliveredAt,
-    this.seenAt,
-    this.messageType,
-    this.url,
-    this.deleted,
-    this.uploaded,
-    this.downloaded,
+    this.messageId = 0,
+    this.fromId = "",
+    this.toId = "",
+    this.messageBody = "",
+    this.sentAt = 0,
+    this.deliveredAt = 0,
+    this.seenAt = 0,
+    this.messageType = 0,
+    this.url = "",
+    this.deleted = 0,
+    this.uploaded = 0,
+    this.downloaded = 0,
   }); //int  intSentAt = ((int.parse(sentAt)/100000) as int )+ 621355968000000000;
-  DateTime getSentAtTime() {
+  DateTime? getSentAtTime() {
     if (_sentAtTime == null)
       _sentAtTime = DateTime.fromMillisecondsSinceEpoch(sentAt * 1000);
     return _sentAtTime;
@@ -580,7 +583,7 @@ class ApMeMessage {
     }
   }
 
-  Future<ApMeMessage> fetch(int messageId, String fromId) async {
+  Future<ApMeMessage?> fetch(int messageId, String fromId) async {
     //var client = await AppDb.db;
     final Future<List<Map<String, dynamic>>> futureMaps =
         AppDatabase.currentDB.query(
@@ -605,14 +608,14 @@ class ApMeMessage {
           ApMeMessages.TableName, toMapForDb(),
           conflictAlgorithm: ConflictAlgorithm.fail);
     } catch (e) {}
-    print("Message Insert Result: " + result.toString());
+    debugPrint("Message Insert Result: " + result.toString());
     return result;
   }
 
   Future<int> update() async {
     int result = 0;
     //var client = await AppDb.db;
-    print("Updating Message : from " +
+    debugPrint("Updating Message : from " +
         fromId +
         " to " +
         toId +
@@ -623,7 +626,7 @@ class ApMeMessage {
         where: 'messageId = ? And fromId = ?',
         whereArgs: [messageId, fromId],
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print("Update Result : " + result.toString());
+    debugPrint("Update Result : " + result.toString());
     return result;
   }
 

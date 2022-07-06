@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter/material.dart';
 import 'AppParameters.dart';
 import 'package:http/http.dart';
 
@@ -53,7 +53,7 @@ class ApMeUtils {
     soap += "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">";
     soap += "<soap:Body>";
     soap += "<$operation xmlns=\"http://tempuri.org/\">";
-    if (parameters.length > 0) {
+    if (parameters.isNotEmpty) {
       soap += "<Parameters>";
       for (int i = 0; i < parameters.length; i++) {
 //        String tmpParam =utf8.encode( parameters[i]);
@@ -72,9 +72,10 @@ class ApMeUtils {
     soap += "</soap:Body>";
     soap += "</soap:Envelope>";
     //var bbody = json.encode(utf8.encode(soap));
+    Uri addressFull = Uri.parse(url + serviceName);
     try {
       Response response = await post(
-        url + serviceName,
+        addressFull,
         headers: headers,
         body: utf8.encode(soap),
       ).timeout(const Duration(seconds: 10), onTimeout: () {
@@ -98,7 +99,7 @@ class ApMeUtils {
         return ("Web request error:" + response.statusCode.toString());
       }
     } catch (e) {
-      print("Oh my god site is down : " + e.toString());
+      debugPrint("Oh my god site is down : " + e.toString());
     }
     return result;
   }

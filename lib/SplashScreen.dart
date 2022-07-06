@@ -1,8 +1,8 @@
-import 'package:ap_me/AppDatabase.dart';
-import 'package:ap_me/AppParameters.dart';
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/LoginPage.dart';
-import 'package:ap_me/tempPage.dart';
+import 'AppDatabase.dart';
+import 'AppParameters.dart';
+import 'AppSettings.dart';
+import 'LoginPage.dart';
+//import 'tempPage.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,13 +16,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     Future.delayed(Duration(seconds: 2), () {
-      print("SplashScreen 1 seconds");
+      debugPrint("SplashScreen 1 seconds");
       initAndGo();
     });
     super.initState();
   }
 
-  Orientation currentOrientation;
+  Orientation? currentOrientation;
 
   void initAndGo() async {
     /*  await AppDatabase.initDatabase();
