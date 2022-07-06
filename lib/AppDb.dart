@@ -1,39 +1,50 @@
-/*
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/Friends.dart';
-import 'package:ap_me/ShortMessages.dart';
-import 'package:ap_me/TempMessages.dart';
+import 'ApMeMessages.dart';
+import 'AppSettings.dart';
+import 'Friends.dart';
+import 'ShortMessages.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-//import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
-import 'ApMeMessages.dart';
+
+import 'TempMessages.dart';
 
 class AppDatabase {
   static Database _database;
 
   static Database currentDB;
 
-  static Future<Database> initDatabase() async {
+  /*static Future<Database?> initDatabase() async {
     Directory directory =
         await getApplicationDocumentsDirectory(); //برای تفاوت اندروید و آی او اس
-    String dbPath = join(directory.path, 'ApMeDatabase.db');
+    String dbPath = join(directory.path, 'ApControllerDB.db');
     currentDB = await openDatabase(dbPath,
         version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return currentDB;
   }
+*/
 
-  static Future<Database> get db async {
+  static Future<void> checkDatabase() async {
+    if (AppDatabase.currentDB == null) {
+      Directory directory =
+          await getApplicationDocumentsDirectory(); //برای تفاوت اندروید و آی او اس
+      String dbPath = join(directory.path, 'ApMeDatabase.db');
+      currentDB = await openDatabase(dbPath,
+          version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    }
+  }
+
+/*
+  static Future<Database?> get db async {
     if (_database != null) return _database;
     // await _checkPermission();
     //if (_database != null) return _database;
     _database = await initDatabase();
     return _database;
   }
-
+*/
   static void _onCreate(Database db, int version) async {
     print("Database Created");
     await db.execute(Friends.tableCreator());
@@ -46,7 +57,7 @@ class AppDatabase {
     print("ShortMessages Table Created");
     await db.execute(AppSettings.tableCreator());
     print("AppSettings Table Created");
-    await AppSettings.addDefaultSetings();
+    await AppSettings.resetToDefaultSetings();
   }
 
   static void _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -85,4 +96,3 @@ var status;
   }
 */
 }
-*/

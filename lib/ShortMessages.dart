@@ -36,6 +36,34 @@ class ShortMessages {
     return allMessages;
   }
 
+  static Future<List<SmsMessage>> getSavedLocalMessages(int count) async {
+    //var client = await AppDb.db;
+    List<SmsMessage> messages = [];
+    var res = await AppDatabase.currentDB.query(ShortMessages.TableName,
+        limit: count, orderBy: "sentAt DESC, address DESC");
+    if (res.isNotEmpty) {
+      for (var i = 0; i < res.length; i++) {
+        SmsMessage tmpMessage = new SmsMessage(
+            res[i]['address'], res[i]['messageBody'],
+            date: new DateTime.fromMillisecondsSinceEpoch(res[i]['sentAt'],
+                isUtc: true),
+            dateSent: new DateTime.fromMillisecondsSinceEpoch(res[i]['sentAt'],
+                isUtc: true),
+            kind: res[i]['kind'] == 1
+                ? SmsMessageKind.Received
+                : (res[i]['kind'] == 0
+                    ? SmsMessageKind.Sent
+                    : SmsMessageKind.Draft));
+        messages.add(tmpMessage);
+        //SmsMessage tmpMessage = new SmsMessage( res[i]['address'], res[i]['messageBody'], res[i]['address'],)
+      }
+
+      messages = messages.reversed.toList();
+      return messages;
+    }
+    return [];
+  }
+
   static Future<List<ShortMessage>> getLocalMessages(int count) async {
     //var client = await AppDb.db;
     var res = await AppDatabase.currentDB.query(ShortMessages.TableName,

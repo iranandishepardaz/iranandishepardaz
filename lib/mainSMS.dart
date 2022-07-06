@@ -8,6 +8,7 @@ import 'AppSettings.dart';
 import 'ShortMessages.dart';
 
 onBackgroundMessage(SmsMessage message) {
+  debugPrint("onBackgroundMessage called");
   String _messageToShow = "onBackgroundMessage called";
 
   saveMessage(message);
@@ -18,23 +19,16 @@ onBackgroundMessage(SmsMessage message) {
 }
 
 Future<int> saveMessage(SmsMessage message) async {
-  await AppDatabase.initDatabase();
   ShortMessage tmpMessage = ShortMessage(
       address: message.address,
-      sentAt: (message.date) ~/
-          1000, // DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      sentAt: (message.date), // DateTime.now().millisecondsSinceEpoch ~/ 1000,
       messageBody: message.body,
       kind: 1,
       uploaded: 0);
   return await tmpMessage.insert();
 }
 
-void main() {
-  init();
-  runApp(MyApp());
-}
-
-void init() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 //  await AppParameters.initialize();
 //this can be done on the splash screen(while waiting)
@@ -44,6 +38,7 @@ void init() async {
   } catch (e) {
     AppSettings.resetToDefaultSetings();
   }
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {

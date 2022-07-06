@@ -10,3 +10,6 @@ adb connect 192.168.1.7 Z3
 
 Build APK:
  flutter build apk --split-per-abi
+
+  //For Image hosting 
+ https://freeimage.host/page/api?lang=en

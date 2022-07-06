@@ -7,11 +7,12 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 Future _showNotification() async {
   var androidSpec = new AndroidNotificationDetails(
       'EDApps', 'FlutterTutorials', 'Learn And Run Quizzes',
-      playSound: true, importance: Importance.Max, priority: Priority.High);
+      playSound: true, importance: Importance.max, priority: Priority.high);
 
   var iosSpec = new IOSNotificationDetails(presentSound: false);
 
-  var platformChannelSpecifics = new NotificationDetails(androidSpec, iosSpec);
+  var platformChannelSpecifics =
+      new NotificationDetails(android: androidSpec, iOS: iosSpec);
 
   await flutterLocalNotificationsPlugin.show(
     0,
@@ -49,7 +50,7 @@ class _MyAppState extends State<NotificationTester> {
     var iosSpec = new IOSInitializationSettings();
 
     var initializationSettings =
-        new InitializationSettings(androidSpec, iosSpec);
+        new InitializationSettings(android: androidSpec, iOS: iosSpec);
 
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 

@@ -40,6 +40,16 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
               },
             ),
             IconButton(
+              icon: Icon(Icons.format_quote_outlined),
+              color: Colors.white,
+              onPressed: () {
+                // messageToShowCount = 20;
+                reverseList = false;
+                getSavedShortMessages(messageToShowCount);
+                //openNotPage();
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.drafts_sharp),
               color: Colors.white,
               onPressed: () {
@@ -131,6 +141,15 @@ class _ShortMessagesPageState extends State<ShortMessagesPage> {
       allMessages = null;
     });
     allMessages = await ShortMessages.getShortMessages(count);
+    setState(() {});
+  }
+
+  Future<void> getSavedShortMessages(int count) async {
+    setState(() {
+      //update UI
+      allMessages = null;
+    });
+    allMessages = await ShortMessages.getSavedLocalMessages(count);
     setState(() {});
   }
 

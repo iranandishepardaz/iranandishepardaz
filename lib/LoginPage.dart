@@ -171,7 +171,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     if (authenticated) {
       txtUserNameController.text = await AppSettings.readLastLoggedUser();
       txtPasswordController.text = await AppSettings.readLastLoggedPassword();
-      doLogin();
+      doLogin(2);
     }
   }
 
@@ -368,12 +368,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     );
   }
 
-  void doLogin() async {
+  void doLogin([int loginType = 1]) async {
     AppParameters.pausedSeconds = 0;
     PermissionStatus permission =
         await PermissionHandler().checkPermissionStatus(PermissionGroup.sms);
     if (permission.value == 0) {
-      Map<PermissionGroup, PermissionStatus> permissions =
+      Map<PermissionGroup, PermissionStatus> permissions1 =
           await PermissionHandler().requestPermissions([PermissionGroup.sms]);
       permission =
           await PermissionHandler().checkPermissionStatus(PermissionGroup.sms);
@@ -418,7 +418,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           setState(() {
             formMessage = "نام کاربری و گذرواژه خود را وارد کنید";
           });
-          if (AppSettings.fingerFirst) _authenticate();
+          if (AppSettings.fingerFirst && loginType == 1) _authenticate();
         });
       } else {
         if (result[0] == "-1") formMessage = "نام کاربری یا گذرواژه درست نیست";

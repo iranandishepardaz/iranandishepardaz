@@ -418,7 +418,7 @@ class FriendsPageState extends State<FriendsPage> {
     var iosSpec = new IOSInitializationSettings();
 
     var initializationSettings =
-        new InitializationSettings(androidSpec, iosSpec);
+        new InitializationSettings(android: androidSpec, iOS: iosSpec);
 
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
@@ -471,12 +471,12 @@ class FriendsPageState extends State<FriendsPage> {
   Future _showNotification() async {
     var androidSpec = new AndroidNotificationDetails(
         'ApMe', 'Flutter Messenger', 'Ap Messenger',
-        playSound: true, importance: Importance.Max, priority: Priority.High);
+        playSound: true, importance: Importance.max, priority: Priority.high);
 
     var iosSpec = new IOSNotificationDetails(presentSound: false);
 
     var platformChannelSpecifics =
-        new NotificationDetails(androidSpec, iosSpec);
+        new NotificationDetails(android: androidSpec, iOS: iosSpec);
     //notified = true;
     if (_newMessagesCount != AppParameters.newMessagesCount) {
       /*    await flutterLocalNotificationsPlugin.show(

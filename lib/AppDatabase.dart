@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/Friends.dart';
-import 'package:ap_me/ShortMessages.dart';
-import 'package:ap_me/TempMessages.dart';
+import 'AppSettings.dart';
+import 'Friends.dart';
+import 'ShortMessages.dart';
+import 'TempMessages.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:permission_handler/permission_handler.dart';
@@ -17,20 +17,14 @@ class AppDatabase {
   static Database currentDB;
 
   static Future<Database> initDatabase() async {
-    Directory directory =
-        await getApplicationDocumentsDirectory(); //برای تفاوت اندروید و آی او اس
-    String dbPath = join(directory.path, 'ApMeDatabase.db');
-    currentDB = await openDatabase(dbPath,
-        version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    if (AppDatabase.currentDB == null) {
+      Directory directory =
+          await getApplicationDocumentsDirectory(); //برای تفاوت اندروید و آی او اس
+      String dbPath = join(directory.path, 'ApMeDatabase.db');
+      currentDB = await openDatabase(dbPath,
+          version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    }
     return currentDB;
-  }
-
-  static Future<Database> get db async {
-    if (_database != null) return _database;
-    // await _checkPermission();
-    //if (_database != null) return _database;
-    _database = await initDatabase();
-    return _database;
   }
 
   static void _onCreate(Database db, int version) async {
@@ -113,10 +107,10 @@ OLD VERSION JUST FOR BACKUP
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ap_me/AppSettings.dart';
-import 'package:ap_me/Friends.dart';
-import 'package:ap_me/ShortMessages.dart';
-import 'package:ap_me/TempMessages.dart';
+import 'AppSettings.dart';
+import 'Friends.dart';
+import 'ShortMessages.dart';
+import 'TempMessages.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:permission_handler/permission_handler.dart';
