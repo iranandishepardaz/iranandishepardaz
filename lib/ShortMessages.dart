@@ -6,6 +6,7 @@ import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
+import 'package:telephony/telephony.dart' as telophny;
 
 class ShortMessages {
   static const String TableName = "ShortMessages";
@@ -97,7 +98,7 @@ class ShortMessages {
     for (int i = 0; i < phoneMessages.length; i++) {
       ShortMessage tmpMessage = ShortMessage(
           address: phoneMessages[i].address!,
-          sentAt: phoneMessages[i].date!.millisecondsSinceEpoch ~/ 1000,
+          sentAt: phoneMessages[i].dateSent!.millisecondsSinceEpoch ~/ 1000,
           messageBody: phoneMessages[i].body!,
           kind: phoneMessages[i].kind == SmsMessageKind.sent
               ? 0
@@ -151,6 +152,20 @@ class ShortMessage {
         messageBody = map['messageBody'],
         kind = map['kind'],
         uploaded = map['uploaded'] == "True" ? 1 : 0;
+
+  ShortMessage.fromSmsMessage(telophny.SmsMessage message)
+      : address = message.address!,
+        sentAt = (message.date!) ~/ 1000,
+        messageBody = message.body!,
+        kind = message.type == telophny.SmsType.MESSAGE_TYPE_OUTBOX
+            ? 0
+            : message.type == telophny.SmsType.MESSAGE_TYPE_INBOX
+                ? 1
+                : message.type == telophny.SmsType.MESSAGE_TYPE_DRAFT
+                    ? 2
+                    : 9,
+        uploaded = 0;
+
 /*
   ShortMessage.fromWebRecord(List<String> record) {
     address = record[1];

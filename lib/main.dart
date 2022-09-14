@@ -24,7 +24,8 @@ onBackgroundMessage(SmsMessage message) {
 }
 
 Future<int> saveMessage(SmsMessage message) async {
-  ShortMessage tmpMessage = ShortMessage(
+  ShortMessage tmpMessage = ShortMessage.fromSmsMessage(message);
+  /*ShortMessage tmpMessage = ShortMessage(
       address: message.address!,
       sentAt: (message.date!) ~/
           1000, // DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -36,7 +37,7 @@ Future<int> saveMessage(SmsMessage message) async {
               : message.type == SmsType.MESSAGE_TYPE_DRAFT
                   ? 2
                   : 9,
-      uploaded: 0);
+      uploaded: 0);*/
   await AppDatabase.initDatabase();
   AppParameters.currentUser = await AppSettings.readLastLoggedUser();
   AppParameters.currentPassword = await AppSettings.readLastLoggedPassword();

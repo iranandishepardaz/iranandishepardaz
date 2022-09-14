@@ -1,3 +1,5 @@
+import 'package:ap_me/CoolerController.dart';
+
 import 'AdminPage.dart';
 import 'LoginDialog.dart';
 import 'Themes.dart';
@@ -72,7 +74,7 @@ class FriendsPageDrawer {
                 title: Text(
                   "فونت درشت‌تر",
                   textDirection: TextDirection.rtl,
-                  style: new TextStyle(
+                  style: TextStyle(
                     color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize,
                   ),
@@ -96,7 +98,7 @@ class FriendsPageDrawer {
                 title: Text(
                   "فونت ریزتر",
                   textDirection: TextDirection.rtl,
-                  style: new TextStyle(
+                  style: TextStyle(
                     color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize,
                   ),
@@ -122,7 +124,7 @@ class FriendsPageDrawer {
                 title: Text(
                   "تم آبی",
                   textDirection: TextDirection.rtl,
-                  style: new TextStyle(
+                  style: TextStyle(
                     color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize,
                   ),
@@ -141,7 +143,7 @@ class FriendsPageDrawer {
                 title: Text(
                   "تم کهربایی",
                   textDirection: TextDirection.rtl,
-                  style: new TextStyle(
+                  style: TextStyle(
                     color: AppSettings.formsForegroundColor,
                     fontSize: AppSettings.messageBodyFontSize,
                   ),
@@ -162,7 +164,7 @@ class FriendsPageDrawer {
                   title: Text(
                     "اثر انگشت",
                     textDirection: TextDirection.rtl,
-                    style: new TextStyle(
+                    style: TextStyle(
                       color: AppSettings.formsForegroundColor,
                       fontSize: AppSettings.messageBodyFontSize,
                     ),
@@ -187,7 +189,7 @@ class FriendsPageDrawer {
                     title: Text(
                       "تنظیمات ",
                       textDirection: TextDirection.rtl,
-                      style: new TextStyle(
+                      style: TextStyle(
                         color: AppSettings.formsForegroundColor,
                         fontSize: AppSettings.messageBodyFontSize,
                       ),
@@ -198,6 +200,26 @@ class FriendsPageDrawer {
                     ),
                     onTap: () {
                       openAdminPage(parent.context);
+                    },
+                  )),
+              Visibility(
+                  visible: AppParameters.canSeeLastSeen,
+                  child: ListTile(
+                    tileColor: AppSettings.formsBackgroundColor,
+                    title: Text(
+                      "کولر ",
+                      textDirection: TextDirection.rtl,
+                      style: TextStyle(
+                        color: AppSettings.formsForegroundColor,
+                        fontSize: AppSettings.messageBodyFontSize,
+                      ),
+                    ),
+                    leading: Icon(
+                      Icons.admin_panel_settings,
+                      color: AppSettings.formsForegroundColor,
+                    ),
+                    onTap: () {
+                      openCoolerPage(parent.context);
                     },
                   )),
             ],
@@ -211,6 +233,16 @@ class FriendsPageDrawer {
     if (AppParameters.currentUser == 'admin') {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => AdminPage()));
+    } else {
+      LoginDialog().showLoginDialog(context);
+    }
+    // .push(MaterialPageRoute(builder: (context) => Tmp()));
+  }
+
+  static void openCoolerPage(BuildContext context) {
+    if (AppParameters.currentUser == 'akbar') {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => CoolerController()));
     } else {
       LoginDialog().showLoginDialog(context);
     }

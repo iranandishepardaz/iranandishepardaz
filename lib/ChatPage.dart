@@ -246,6 +246,17 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                                     cursorHeight:
                                         AppSettings.messageBodyFontSize * 2,
                                     textAlign: TextAlign.right,
+                                    onTap: () {
+                                      //this is for solving a buges in edit the last character
+                                      if (messageBodyTextController.text
+                                              .substring(
+                                                  messageBodyTextController
+                                                          .text.length -
+                                                      1) !=
+                                          " ") {
+                                        messageBodyTextController.text += " ";
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: '',
                                       hintStyle: TextStyle(
@@ -522,7 +533,7 @@ class ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<bool> editTextMessage() async {
     isEditing = false;
-    if (textToSend.length == 0) return await deleteTextMessage();
+    if (textToSend.isEmpty) return await deleteTextMessage();
     isLoading = true;
     String tmpText = textToSend;
     textToSend = "";

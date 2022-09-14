@@ -69,35 +69,43 @@ class MessageEditor {
                               children: [
                                 Expanded(
                                     flex: 70,
-                                    child: Directionality(
+                                    child: TextField(
                                       textDirection: TextDirection.rtl,
-                                      child: TextField(
-                                        style: TextStyle(
+                                      style: TextStyle(
+                                          color:
+                                              AppSettings.titlesForegroundColor,
+                                          fontSize:
+                                              AppSettings.messageBodyFontSize),
+                                      cursorColor:
+                                          AppSettings.titlesForegroundColor,
+                                      cursorHeight:
+                                          AppSettings.messageBodyFontSize * 2,
+                                      textAlign: TextAlign.right,
+                                      onTap: () {
+                                        if (messageBodyTextController.text
+                                                .substring(
+                                                    messageBodyTextController
+                                                            .text.length -
+                                                        1) !=
+                                            " ") {
+                                          messageBodyTextController.text += " ";
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            'پیام خالی به معنای حذف پیام خواهد بود',
+                                        hintStyle: TextStyle(
                                             color: AppSettings
-                                                .titlesForegroundColor,
+                                                .sentMessageForeColor,
                                             fontSize: AppSettings
                                                 .messageBodyFontSize),
-                                        cursorColor:
-                                            AppSettings.titlesForegroundColor,
-                                        cursorHeight:
-                                            AppSettings.messageBodyFontSize * 2,
-                                        textAlign: TextAlign.right,
-                                        decoration: InputDecoration(
-                                          hintText:
-                                              'پیام خالی به معنای حذف پیام خواهد بود',
-                                          hintStyle: TextStyle(
-                                              color: AppSettings
-                                                  .sentMessageForeColor,
-                                              fontSize: AppSettings
-                                                  .messageBodyFontSize),
-                                          contentPadding: EdgeInsets.all(2),
-                                        ),
-                                        maxLines: null,
-                                        controller: messageBodyTextController,
-                                        onChanged: (value) {
-                                          // textToSend = value;
-                                        },
+                                        contentPadding: EdgeInsets.all(2),
                                       ),
+                                      maxLines: null,
+                                      controller: messageBodyTextController,
+                                      onChanged: (value) {
+                                        // textToSend = value;
+                                      },
                                     )),
                               ],
                             )),
